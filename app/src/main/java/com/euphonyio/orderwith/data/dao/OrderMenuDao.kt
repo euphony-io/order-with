@@ -9,7 +9,7 @@ import com.euphonyio.orderwith.data.dto.OrderMenu
 
 /**
  *  메뉴-주문 연결 Dao
- *  @author hyejin
+ *  @author phj0407
  */
 @Dao
 interface OrderMenuDao {

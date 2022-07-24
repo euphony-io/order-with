@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
  *  메뉴-주문 연결 Dto
  *  @see Menu
  *  @see Order
- *  @author hyejin
+ *  @author phj0407
  */
 @Entity(
     foreignKeys = [

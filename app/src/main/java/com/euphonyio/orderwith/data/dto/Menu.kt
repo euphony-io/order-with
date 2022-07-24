@@ -6,13 +6,14 @@ import androidx.room.PrimaryKey
 
 /**
  *  메뉴 Dto
- *  @author hyejin
+ *  @author phj0407
  */
 @Entity
 data class Menu(
     @PrimaryKey val id: Int,
     @ColumnInfo(name = "name") val name: String?,
     @ColumnInfo(name = "description") val description: String?,
+    @ColumnInfo(name = "image") val image: String?,
     @ColumnInfo(name = "cost") val cost: Int?
 )
 

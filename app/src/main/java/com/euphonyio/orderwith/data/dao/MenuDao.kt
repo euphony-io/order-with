@@ -8,7 +8,7 @@ import com.euphonyio.orderwith.data.dto.Menu
 
 /**
  *  메뉴 Dao
- *  @author hyejin
+ *  @author phj0407
  */
 @Dao
 interface MenuDao {

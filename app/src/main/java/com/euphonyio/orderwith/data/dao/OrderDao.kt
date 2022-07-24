@@ -8,7 +8,7 @@ import com.euphonyio.orderwith.data.dto.Order
 
 /**
  *  주문 Dao
- *  @author hyejin
+ *  @author phj0407
  */
 @Dao
 interface OrderDao {

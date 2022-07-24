@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 /**
  *  주문 Dto
- *  @author hyejin
+ *  @author phj0407
  */
 @Entity
 data class Order(

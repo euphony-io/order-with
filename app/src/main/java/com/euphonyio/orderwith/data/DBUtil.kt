@@ -37,10 +37,10 @@ class DBUtil(context: Context) {
 
 
     // 2. add Menu
-    fun addMenu(title: String, description: String, cost: Int) {
+    fun addMenu(title: String, description: String, image: String, cost: Int) {
         val dao = db.menuDao()
         val id = dao.getLastId() + 1
-        val menu = Menu(id, title, description, cost)
+        val menu = Menu(id, title, description, image, cost)
         dao.insertMenu(menu)
     }
 
