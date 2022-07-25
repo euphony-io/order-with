@@ -63,6 +63,7 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
 
     // Euphony
+
     implementation files('libs/euphony_0.7.1.6.aar')
 
     // Room DB
