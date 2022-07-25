@@ -6,6 +6,7 @@ import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.Menu
 import com.euphonyio.orderwith.data.dto.OrderMenu
 import com.euphonyio.orderwith.data.dto.OrderMenuItem
+import java.net.URL
 import java.util.*
 
 class DBUtil(context: Context) {
@@ -37,7 +38,7 @@ class DBUtil(context: Context) {
 
 
     // 2. add Menu
-    fun addMenu(title: String, description: String, image: String, cost: Int) {
+    fun addMenu(title: String, description: String, image: URL , cost: Int) {
         val dao = db.menuDao()
         val id = dao.getLastId() + 1
         val menu = Menu(id, title, description, image, cost)
