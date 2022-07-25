@@ -20,7 +20,7 @@ class DBUtil(context: Context) {
     }
 
     //  < Menu >
-    // 1-1. Get all menu (id, title, description, cost)
+    // 1-1. Get all menu (id, name, description, image, cost)
     fun getAllMenu(): List<Menu> {
         return db.menuDao().getAll()
     }
