@@ -13,7 +13,7 @@ import com.euphonyio.orderwith.data.dto.OrderMenu
  */
 @Dao
 interface OrderMenuDao {
-    @Query("SELECT * FROM OrderMenu")
+    @Query("Select * FROM OrderMenu")
     fun getAll(): List<OrderMenu>
 
     @Query("Select om.id as id, om.order_id as orderId, menu.name as menuName, om.count as count from OrderMenu om Left join menu on om.menu_id = menu.id")
@@ -23,7 +23,7 @@ interface OrderMenuDao {
             "WHERE om.order_id = (:orderId)")
     fun getAllByOrderId(orderId: Int): List<OrderMenuItem>
 
-    @Query("SELECT id FROM OrderMenu order by id desc limit 1")
+    @Query("Select id FROM OrderMenu order by id desc limit 1")
     fun getLastId() : Int
 
     @Insert
