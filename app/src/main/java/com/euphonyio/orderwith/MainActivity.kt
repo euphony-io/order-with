@@ -109,11 +109,11 @@ fun goStore(context: Context) {
 fun goCustomer(context: Context) {
     context.startActivity(Intent(context, CustomerActivity::class.java))
 }
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    OrderWithTheme {
-        Main()
-    }
-}
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun DefaultPreview() {
+//    OrderWithTheme {
+//        Main()
+//    }
+//}

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.euphonyio.orderwith.data.DBUtil
 import com.euphonyio.orderwith.data.dto.OrderMenuItem
+import com.euphonyio.orderwith.data.dto.Order
 
 
 class StoreOrderActivity : ComponentActivity() {

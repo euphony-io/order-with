@@ -3,6 +3,7 @@ package com.euphonyio.orderwith.data
 import android.content.Context
 import androidx.room.Room
 import com.euphonyio.orderwith.data.dto.Menu
+import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.OrderMenu
 import com.euphonyio.orderwith.data.dto.OrderMenuItem
 import java.util.*
