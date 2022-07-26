@@ -1,148 +1,120 @@
 package com.euphonyio.orderwith
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AddCircle
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupPositionProvider
-import androidx.room.Room
-import com.euphonyio.orderwith.data.AppDatabase
-import com.euphonyio.orderwith.data.DBUtil
-import com.euphonyio.orderwith.data.dto.Menu
-import com.euphonyio.orderwith.data.dto.Order
-import com.euphonyio.orderwith.data.dto.OrderMenu
-import com.euphonyio.orderwith.data.dto.OrderMenuItem
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
+import euphony.lib.receiver.AcousticSensor
 
+import euphony.lib.receiver.EuRxManager
 
 class MainActivity : ComponentActivity() {
-    private val dbUtil = DBUtil(this)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
-            createIconButton(Icons.Outlined.ArrowBack)
-            createIconButton(Icons.Outlined.AddCircle)
-
-
-            var orderlist = dbUtil.getAllOrder()
-
-            for (order in orderlist)
-            {
-                val ordermenulist = dbUtil.getAllWithMenuByOrderId(order.id)
-                LazyColumn(modifier = Modifier.padding(30.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                   item{
-                       Ordercard(ordername = order.name, ordermenulist = ordermenulist)
-                   }
-                }
-
-            }
-
+            Main()
         }
     }
 }
 
-
 @Composable
-fun Ordercard(ordername: String, ordermenulist: List<OrderMenuItem>) {
+fun Main() {
 
-    var ischecked = remember { mutableStateOf(false) }
-    var isClicked = remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
-   Row(modifier = Modifier
-       .border(width = 2.dp, color = Color.Black, shape = RectangleShape)
-       .padding(10.dp),
-          verticalAlignment = Alignment.CenterVertically) {
-
-        Checkbox(checked = ischecked.value, onCheckedChange = { ischecked.value = it })
-        Button(modifier = Modifier
+    Column (
+        modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
-            , onClick = { isClicked.value = !isClicked.value}
-            , colors = ButtonDefaults.buttonColors(backgroundColor = Color.White, contentColor = Color.Black)
-        ) {
-            if(isClicked.value){
-                make_dialog(ordermenulist , isClicked = isClicked)
-            }
-            Text(text = ordername, fontSize = 25.sp)
-        }
-    }
-    Spacer(modifier = Modifier.padding(8.dp))
-}
-
-
-@Composable
-fun make_dialog(ordermenulist: List<OrderMenuItem>, isClicked: MutableState<Boolean>){
-
-
-    AlertDialog(onDismissRequest = { isClicked.value = false },
-        title = { Text(text = "order content")},
-        text = {
-
-            Column(modifier = Modifier
-                //.border(width = 1.dp, color = Color.Black, shape = RectangleShape)
-                .padding(10.dp)
-                .wrapContentHeight()
-                .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceEvenly,
+            .fillMaxHeight(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
             ){
-                for (ordermenu in ordermenulist) {
-
-                    val menuname =ordermenu.menuName
-                    val count = ordermenu.count.toString()
-
-                    Row(modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly) {
-
-                        Text(text = menuname)
-                        Text(text = count)
-
-                    }
+        Text(
+            modifier = Modifier
+                .padding(bottom = 30.dp),
+            textAlign = TextAlign.Center,
+            text = "Order-With",
+            style = MaterialTheme.typography.h3
+        )
+        Row {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Image(painterResource(R.drawable.customer),"content description")
+                Button(
+                    modifier = Modifier.padding(
+                    top = 16.dp,
+                    start = 30.dp,
+                    end = 30.dp,
+                    ),
+                    onClick = {
+                        goCustomer(context = context)
+                        //mContext.startActivity(Intent(mContext, CustomerActivity::class.java))
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
+                ) {
+                    Text("Customer")
                 }
             }
-               },
-        buttons = {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center)
-            {TextButton(onClick = {isClicked.value=false}){ Text(text = "close") }
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Image(painterResource(R.drawable.shops),"content description")
+                Button(
+                    modifier = Modifier.padding(
+                    top = 16.dp,
+                    start = 30.dp,
+                    end = 30.dp,
+                    ),
+                    onClick = {
+                              goStore(context = context)
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
+                ) {
+                    Text("Store")
+                }
             }
         }
-    )
-
-}
-
-@Composable
-fun createIconButton(icon: ImageVector){
-
-    Button(onClick = { /*TODO*/ }) {
-        Icon(icon, "contentdescription")
     }
 }
 
+fun goStore(context: Context) {
+    context.startActivity(Intent(context, StoreActivity::class.java))
+}
 
+fun goCustomer(context: Context) {
+    context.startActivity(Intent(context, CustomerActivity::class.java))
+}
 
-
-
-
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    OrderWithTheme {
+        Main()
+    }
+}

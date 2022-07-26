@@ -3,6 +3,8 @@
     package="com.euphonyio.orderwith">
     <!-- add Permission RECORD_AUDIO for using Euphony -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+<!--    add Permission READ_STORAGE for loading image -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -12,6 +14,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OrderWith">
 
+        <activity
+            android:name=".StoreActivity"
+            android:exported="false"
+            android:label="@string/title_activity_store"
+            android:theme="@style/Theme.OrderWith" />
+        <activity
+            android:name=".CustomerActivity"
+            android:exported="false"
+            android:label="@string/title_activity_customer"
+            android:theme="@style/Theme.OrderWith" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
