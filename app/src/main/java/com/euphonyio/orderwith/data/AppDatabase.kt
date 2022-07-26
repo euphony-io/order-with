@@ -9,7 +9,7 @@ import com.euphonyio.orderwith.data.dto.Menu
 import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.OrderMenu
 
-@Database(entities = [ Order::class, Menu::class, OrderMenu::class], version = 3)
+@Database(entities = [ Order::class, Menu::class, OrderMenu::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun orderDao(): OrderDao
     abstract fun menuDao(): MenuDao

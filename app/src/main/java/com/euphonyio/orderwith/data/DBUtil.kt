@@ -16,11 +16,11 @@ class DBUtil(context: Context) {
         db = Room.databaseBuilder(
             context,
             AppDatabase::class.java, DB_NAME
-        ).allowMainThreadQueries().build()
+        ).build()
     }
 
     //  < Menu >
-    // 1-1. Get all menu (id, title, description, cost)
+    // 1-1. Get all menu (id, name, description, cost)
     fun getAllMenu(): List<Menu> {
         return db.menuDao().getAll()
     }
@@ -37,10 +37,10 @@ class DBUtil(context: Context) {
 
 
     // 2. add Menu
-    fun addMenu(title: String, description: String, image: String, cost: Int) {
+    fun addMenu(name: String, description: String, cost: Int) {
         val dao = db.menuDao()
         val id = dao.getLastId() + 1
-        val menu = Menu(id, title, description, image, cost)
+        val menu = Menu(id, name, description, cost)
         dao.insertMenu(menu)
     }
 

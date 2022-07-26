@@ -34,7 +34,7 @@ interface MenuDao {
     fun insertMenu(menu: Menu) : Long
 
     @Delete
-    fun delete(menus: Menu)
+    fun delete(menu: Menu)
 
     @Query("DELETE FROM Menu")
     fun deleteAll()
