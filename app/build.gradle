@@ -22,6 +22,7 @@ android {
 
     buildTypes {
         release {
+            testCoverageEnabled false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -63,7 +64,7 @@ dependencies {
     // Euphony
     def euphony_version = "0.7.1.6"
     implementation "co.jbear.lib:euphony:$euphony_version"
-    implementation "euphony.lib:euphony:$euphony_version"
+    //implementation "euphony.lib:euphony:$euphony_version"
 
     // Room DB
     def room_version = "2.4.2"

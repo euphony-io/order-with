@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">OrderWith</string>
+    <string name="title_activity_customer">CustomerActivity</string>
+    <string name="title_activity_store">StoreActivity</string>
 </resources>
