@@ -22,7 +22,6 @@ android {
 
     buildTypes {
         release {
-            testCoverageEnabled false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -64,7 +63,6 @@ dependencies {
     // Euphony
     def euphony_version = "0.7.1.6"
     implementation "co.jbear.lib:euphony:$euphony_version"
-    //implementation "euphony.lib:euphony:$euphony_version"
 
     // Room DB
     def room_version = "2.4.2"
@@ -74,4 +72,8 @@ dependencies {
     def glide_version = "4.11.0"
     implementation "com.github.bumptech.glide:glide:$glide_version"
     annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
+
+    // landscapist for loading image in Compose
+    def landscapist_version = "1.5.3"
+    implementation "com.github.skydoves:landscapist-glide:$landscapist_version"
 }
