@@ -64,13 +64,15 @@ dependencies {
 
     // Euphony
 
-    implementation files('libs/euphony_0.7.1.6.aar')
-    //1. https://search.maven.org/artifact/co.jbear.lib/euphony/0.7.1.6/aar
-    // download aar file here and put in 'app/libs' folder
+  
+   // 1. Just implement library
+    def euphony_version = "0.7.1.6"
+    implementation "co.jbear.lib:euphony:$euphony version"
 
-
-    //2.  def euphony_version = "0.7.1.6"
-    //    implementation "co.jbear.lib:euphony:$euphony_version"
+/** 2. Here is another way to implement euphony by importing aar/jar file directory.
+  * https://search.maven.org/artifact/co.jbear.lib/euphony/0.7.1.6/aar
+  * Please read `PREREQUISITE.md` for more details in euphony
+    implementation files('libs/euphony_0.7.1.6.aar') */
 
 
     // Room DB
