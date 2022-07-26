@@ -63,29 +63,10 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
 
     // Euphony
-
-  
-   // 1. Just implement library
-    def euphony_version = "0.7.1.6"
-    implementation "co.jbear.lib:euphony:$euphony version"
-
-/** 2. Here is another way to implement euphony by importing aar/jar file directory.
-  * https://search.maven.org/artifact/co.jbear.lib/euphony/0.7.1.6/aar
-  * Please read `PREREQUISITE.md` for more details in euphony
-    implementation files('libs/euphony_0.7.1.6.aar') */
+    implementation name: 'euphony-0.7.1.6', ext: 'aar'
 
 
     // Room DB
     def room_version = "2.4.2"
     implementation "androidx.room:room-runtime:$room_version"
-
-    // Glide
-    def glide_version = "4.11.0"
-    implementation "com.github.bumptech.glide:glide:$glide_version"
-    annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
-
-
-    // landscapist for loading image in Compose
-    def landscapist_version = "1.5.3"
-    implementation "com.github.skydoves:landscapist-glide:$landscapist_version"
 }
