@@ -64,6 +64,7 @@ dependencies {
 
     // Euphony
     implementation name: 'euphony-0.7.1.6', ext: 'aar'
+    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 
 
     // Room DB

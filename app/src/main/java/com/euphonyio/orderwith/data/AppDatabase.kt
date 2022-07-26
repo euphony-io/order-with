@@ -6,7 +6,6 @@ import com.euphonyio.orderwith.data.dao.MenuDao
 import com.euphonyio.orderwith.data.dao.OrderDao
 import com.euphonyio.orderwith.data.dao.OrderMenuDao
 import com.euphonyio.orderwith.data.dto.Menu
-import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.OrderMenu
 
 @Database(entities = [ Order::class, Menu::class, OrderMenu::class], version = 3)
