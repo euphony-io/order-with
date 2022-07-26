@@ -29,6 +29,7 @@ import com.euphonyio.orderwith.ui.theme.Shapes
 import com.euphonyio.orderwith.ui.theme.Typography
 import com.skydoves.landscapist.glide.GlideImage
 
+
 class CustomerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
