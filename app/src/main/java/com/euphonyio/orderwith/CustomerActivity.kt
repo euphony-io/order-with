@@ -6,16 +6,19 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
 import com.euphonyio.orderwith.ui.theme.Shapes
 import com.euphonyio.orderwith.ui.theme.Typography
+import java.util.*
 
 
 class CustomerActivity : ComponentActivity() {
@@ -48,6 +52,8 @@ class CustomerActivity : ComponentActivity() {
 
         // request Menu String by Euphony
         requestMenu()
+
+
     }
 
     private fun requestMenu() {
@@ -58,10 +64,9 @@ class CustomerActivity : ComponentActivity() {
 @Composable
 fun CustomerView() {
 
-    val context = LocalContext.current
     val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
-    Column (Modifier.fillMaxSize()){
+    Column(Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.padding(8.dp))
         // show menu list
         MenuList(modifier = Modifier.weight(1f))
@@ -71,12 +76,11 @@ fun CustomerView() {
                 .fillMaxWidth(),
 //                .weight(1f),
             horizontalArrangement = Arrangement.Center
-        ){
+        ) {
             Spacer(modifier = Modifier.padding(6.dp))
             // Cancel Button
-            // TODO: BackPressed 구현
             Button(
-                modifier = Modifier.background(color = Color.LightGray),
+                modifier = Modifier.background(color = Color.White),
                 onClick = { onBackPressedDispatcher?.onBackPressed() },
                 shape = RoundedCornerShape(3.dp),
             ) {
@@ -94,30 +98,6 @@ fun CustomerView() {
     }
 }
 
-//@Composable
-//fun BackPressHandler(
-//    backPressedDispatcher: OnBackPressedDispatcher? =
-//        LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher,
-//    onBackPressed: () -> Unit
-//) {
-//    val currentOnBackPressed by rememberUpdatedState(newValue = onBackPressed)
-//
-//    val backCallback = remember {
-//        object : OnBackPressedCallback(true) {
-//            override fun handleOnBackPressed() {
-//                currentOnBackPressed
-//            }
-//        }
-//    }
-//
-//    DisposableEffect(key1 = backPressedDispatcher) {
-//        backPressedDispatcher?.addCallback(backCallback)
-//
-//        onDispose {
-//            backCallback.remove()
-//        }
-//    }
-//}
 
 @Composable
 fun MenuList(modifier: Modifier) {
@@ -128,7 +108,7 @@ fun MenuList(modifier: Modifier) {
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         // TODO: mockData
-        items(15) {
+        items(3) {
             // List item
             MenuListItem()
         }
@@ -141,33 +121,28 @@ fun MenuList(modifier: Modifier) {
 @Composable
 fun MenuListItem() {
 
-    var count by remember { mutableStateOf("0")}
+    var count by remember { mutableStateOf(0) }
 
     Surface {
-//        ConstraintLayout
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
             Spacer(modifier = Modifier.padding(5.dp))
-            Column(modifier = Modifier
-                .fillMaxHeight()
-                .wrapContentWidth()
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(2f)
             ) {
                 // TODO: name
                 Text(
                     text = "FoodName",
-                    textAlign = TextAlign.Center,
-                    style = Typography.body1
+                    style = Typography.h5
                 )
-            }
-            Spacer(modifier = Modifier.padding(3.dp))
-            Column(
-                modifier = Modifier.fillMaxHeight(),
-                verticalArrangement = Arrangement.Center
-            ) {
+                Spacer(modifier = Modifier.padding(3.dp))
                 // TODO: description 설정
                 Surface(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .border(
                             width = 1.dp,
                             color = Color.LightGray,
@@ -175,50 +150,82 @@ fun MenuListItem() {
                         )
                 ) {
                     Text(
-                        text = "description\n\n\n",
+                        text = "description\n\n",
+                        modifier = Modifier.padding(start = 2.dp),
                         style = Typography.body1,
                         color = Color.LightGray,
-                        maxLines = 4,
+                        maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
+                Spacer(modifier = Modifier.padding(3.dp))
+            }
+            Spacer(modifier = Modifier.padding(3.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = Modifier.padding(10.dp))
                 Row(
-                    modifier = Modifier,
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    // TODO: Cost 설정
-                    Text(
-                        text = "Cost",
-                        style = Typography.body1
-                    )
                     Spacer(modifier = Modifier.padding(5.dp))
                     // decrease count button
-                    Button(
+                    Icon(
                         modifier = Modifier
-                            .wrapContentSize()
-                            .background(color = Color.Gray),
-                        onClick = { /*TODO*/ }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_arrow_count_down),
-                            contentDescription = null)
-                    }
-                    TextField(
-                        value = count,
-                        onValueChange = { count = it }
+                            .clickable { }
+                            .background(
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(
+                                    topStart = 8.dp,
+                                    bottomStart = 8.dp
+                                )
+                            )
+                            .padding(horizontal = 6.dp, vertical = 8.dp),
+                        painter = painterResource(id = R.drawable.ic_minus_count),
+                        contentDescription = null
+                    )
+                    Text(
+                        text = count.toString(),
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .width(30.dp)
+                            .height(30.dp)
+                            .align(Alignment.CenterVertically),
+                        textAlign = TextAlign.Center,
                     )
                     // increase count button
-                    Button(
+                    ClickableText(
+                        text = AnnotatedString("+"),
                         modifier = Modifier
-                            .wrapContentSize()
-                            .background(color = Color.LightGray),
-                        onClick = { /*TODO*/ }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_arrow_count_up),
-                            contentDescription = null)
-                    }
+                            .background(
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(
+                                    topEnd = 8.dp,
+                                    bottomEnd = 8.dp
+                                )
+                            )
+                            .padding(horizontal = 9.dp, vertical = 5.dp),
+                        style = Typography.body1,
+                        onClick = {}
+                    )
                 }
+                Spacer(modifier = Modifier.padding(5.dp))
+                // TODO: Cost 설정
+//                val cost =
+                val totalCost: String =
+                    String.format("%s %s", Currency.getInstance(Locale.KOREA).symbol, "2000")
+                Text(
+                    text = totalCost,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = Typography.h6,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.padding(3.dp))
             }
             Spacer(modifier = Modifier.padding(5.dp))
         }
@@ -236,7 +243,7 @@ fun CheckOrderButton() {
     }
     Surface {
         Button(
-            modifier = Modifier.background(color = Color.Blue),
+            modifier = Modifier.background(color = Color.White),
             onClick = { showDialog.value = true },
             shape = RoundedCornerShape(3.dp),
         ) {
@@ -254,6 +261,9 @@ fun CheckOrderDialog(
     onDismiss: () -> Unit,
 ) {
     if (showDialog) {
+
+        val showCost = Currency.getInstance(Locale.KOREA).symbol + ""
+
         AlertDialog(
             modifier = Modifier
                 .fillMaxWidth()
@@ -261,19 +271,20 @@ fun CheckOrderDialog(
             backgroundColor = Color.White,
             onDismissRequest = onDismiss,
             text = {
-                Text(text = "total Price: \u00A4\n" +
-                    "Complete the order to press \"OK\"") },
+                Text(text = "total Price: $showCost" +
+                        "Complete the order to press \"OK\"")
+            },
             buttons = {
-                Row (
+                Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
-                ){
+                ) {
                     // close the dialog button
                     Button(
                         onClick = onDismiss,
                         modifier = Modifier
                             .padding(8.dp)
-                            .background(color = Color.LightGray),
+                            .background(color = Color.White),
                         shape = RoundedCornerShape(5.dp)
                     ) {
                         Text(
@@ -287,7 +298,7 @@ fun CheckOrderDialog(
                         onClick = { /*TODO*/ },
                         modifier = Modifier
                             .padding(8.dp)
-                            .background(color = Color.Blue),
+                            .background(color = Color.White),
                         shape = RoundedCornerShape(5.dp)
                     ) {
                         Text(
@@ -307,5 +318,6 @@ fun DefaultPreview2() {
     OrderWithTheme {
 //        CustomerView()
         MenuList(modifier = Modifier)
+//        MenuListItem()
     }
 }
