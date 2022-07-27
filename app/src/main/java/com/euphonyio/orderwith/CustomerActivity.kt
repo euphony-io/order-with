@@ -2,8 +2,6 @@ package com.euphonyio.orderwith
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -16,9 +14,8 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,7 +24,6 @@ import androidx.compose.ui.unit.sp
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
 import com.euphonyio.orderwith.ui.theme.Shapes
 import com.euphonyio.orderwith.ui.theme.Typography
-import com.skydoves.landscapist.glide.GlideImage
 
 
 class CustomerActivity : ComponentActivity() {
@@ -144,6 +140,9 @@ fun MenuList(modifier: Modifier) {
 
 @Composable
 fun MenuListItem() {
+
+    var count by remember { mutableStateOf("0")}
+
     Surface {
 //        ConstraintLayout
         Row(
@@ -160,18 +159,6 @@ fun MenuListItem() {
                     textAlign = TextAlign.Center,
                     style = Typography.body1
                 )
-                Surface(
-                    modifier = Modifier.size(90.dp),
-                    shape = Shapes.medium,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f)
-                ) {
-                    GlideImage(
-                        // TODO: 받아온 이미지로 설정
-                        imageModel = ImageBitmap.imageResource(R.drawable.ic_no_image),
-                        placeHolder = ImageBitmap.imageResource(R.drawable.ic_no_image),
-                        error = ImageBitmap.imageResource(R.drawable.ic_no_image)
-                    )
-                }
             }
             Spacer(modifier = Modifier.padding(3.dp))
             Column(
@@ -212,10 +199,14 @@ fun MenuListItem() {
                             .background(color = Color.Gray),
                         onClick = { /*TODO*/ }
                     ) {
-                        GlideImage(
-                            imageModel = ImageBitmap.imageResource(R.drawable.ic_arrow_count_down),
-                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_arrow_count_down),
+                            contentDescription = null)
                     }
+                    TextField(
+                        value = count,
+                        onValueChange = { count = it }
+                    )
                     // increase count button
                     Button(
                         modifier = Modifier
@@ -223,9 +214,9 @@ fun MenuListItem() {
                             .background(color = Color.LightGray),
                         onClick = { /*TODO*/ }
                     ) {
-                        GlideImage(
-                            imageModel = ImageBitmap.imageResource(R.drawable.ic_arrow_count_up)
-                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_arrow_count_up),
+                            contentDescription = null)
                     }
                 }
             }
