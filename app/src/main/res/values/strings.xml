@@ -3,4 +3,6 @@
     <string name="title_activity_customer">CustomerActivity</string>
     <string name="title_activity_store">StoreActivity</string>
     <string name="title_activity_store_order">StoreOrderActivity</string>
+    <string name="title_orderlist">Order List</string>
+    <string name="common_close">close</string>
 </resources>
