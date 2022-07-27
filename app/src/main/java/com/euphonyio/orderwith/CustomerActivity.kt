@@ -25,6 +25,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.euphony.rx.EuRxManager
+import co.euphony.tx.EuTxManager
+import co.euphony.util.EuOption
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
 import com.euphonyio.orderwith.ui.theme.Shapes
 import com.euphonyio.orderwith.ui.theme.Typography
@@ -32,6 +35,10 @@ import java.util.*
 
 
 class CustomerActivity : ComponentActivity() {
+
+    private lateinit var txManager: EuTxManager
+    private lateinit var rxManager: EuRxManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -39,20 +46,33 @@ class CustomerActivity : ComponentActivity() {
             CustomerView()
         }
 
-//        val mRxManager: EuRxManager = EuRxManager()
-//        mRxManager.setAcousticSensor {  }
-//
-//        mRxManager.listen()
-
+        // initialize Euphony TxManager, RxManager
+        initEuphony()
 
         // request Menu String by Euphony
         requestMenu()
+        // listen Menu Data and store as list
+        setMenuData()
 
+        // TODO: 리스트에 리스트자료구조 뿌려주기
+    }
 
+    private fun initEuphony() {
+        txManager = EuTxManager(applicationContext)
+        rxManager = EuRxManager(EuOption.ModeType.EUPI)
     }
 
     private fun requestMenu() {
-        // TODO: Euphony TxManager 사용
+        // create euphony Managers
+
+        // transmit frequency
+        txManager.callEuPI(18500.0, EuTxManager.EuPIDuration.LENGTH_LONG)
+    }
+
+    private fun setMenuData() {
+        // TODO: RxManager listen
+
+        // TODO: 데이터받았으면 데이터 파싱해서 리스트로 저장
     }
 }
 
