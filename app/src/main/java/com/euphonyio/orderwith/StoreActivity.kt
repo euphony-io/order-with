@@ -12,6 +12,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -39,20 +41,20 @@ import com.euphonyio.orderwith.ui.theme.OrderWithTheme
 import kotlinx.coroutines.*
 
 class StoreActivity : ComponentActivity() {
-    private lateinit var dbUtil : DBUtil
+    private lateinit var dbUtil: DBUtil
+    val mTxManager = EuTxManager(this)
+    val mRxManager = EuRxManager()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         dbUtil = DBUtil(this)
+
         var allMenu = listOf<Menu>()
+
         runBlocking {
             delay(50000)
             allMenu = dbUtil.getAllMenu()
-
         }
-        val mTxManager = EuTxManager(this)
-        val mRxManager = EuRxManager()
 
         setContent {
             OrderWithTheme() {
@@ -62,7 +64,7 @@ class StoreActivity : ComponentActivity() {
                 ) {
                     InitView(dbUtil)
                 }
-            } //  # Activate Listener when there is menudata & Start listen
+            } //# Activate Listener when there is menudata & Start listen
             var listenOn = setListener(allMenu)
 
             while (listenOn) {
@@ -92,17 +94,18 @@ class StoreActivity : ComponentActivity() {
                         mTxManager.stop()
                     }
                     receiveOrder(mRxManager)
+                    //TODO: refresh page
                 } else {
                     //Nothing to receive
                 }
-                //if (receiveOrder success){ OrderCard}
 
                 if (!listenOn) {
                     listenOn = true
                 }
             }
         }
-   }
+    }
+
 }
 
 //페이지 접속 시 한 번만 작동
@@ -134,7 +137,7 @@ fun goAddMenu(context: Context) {
 }
 
 @Composable
-fun InitView(dbUtil:DBUtil) {
+fun InitView(dbUtil: DBUtil) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -155,12 +158,19 @@ fun TopBar() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Button(onClick = { goMain(context = context) }) {
-            (Icons.Outlined.ArrowBack)
+        //TODO: 버튼아이콘크기수정
+        IconButton(modifier = Modifier.size(50.dp), onClick = { goMain(context = context) }) {
+            Icon(
+                Icons.Outlined.ArrowBack,
+                "back to main"
+            )
         }
         Text(text = stringResource(id = R.string.title_orderlist), fontSize = 30.sp)
-        Button(onClick = { goAddMenu(context = context) }) {
-            (Icons.Outlined.AddCircle)
+        IconButton(modifier = Modifier.size(50.dp), onClick = { goAddMenu(context = context) }) {
+            Icon(
+                Icons.Outlined.AddCircle,
+                "go to add"
+            )
         }
     }
 
@@ -170,25 +180,33 @@ fun TopBar() {
 fun OrderList(dbUtil: DBUtil) {
     val coroutine = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
+    var allOrder = mutableListOf<Order>()
+    var orderMenuList = mutableMapOf<Int, List<OrderMenuItem>>()
+
     LazyColumn(
         modifier = Modifier.padding(30.dp),
         state = scrollState,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        coroutine.launch {
-            val allOrder = dbUtil.getAllOrder()
-            for (order in allOrder) {
-                val orderMenuList = dbUtil.getAllWithMenuByOrderId(order.id)
-                item {
-                    OrderCard(orderName = order.name, orderMenuList = orderMenuList)
-                }
-            }
+        //TODO: coroutine 데이터 불러오기 해결
+//        coroutine.launch {
+//            allOrder = dbUtil.getAllOrder()
+//            for (order in allOrder) {
+//                val id = order.id
+//                orderMenuList[id] = dbUtil.getAllWithMenuByOrderId(id)
+//            }
+//        }
+
+        itemsIndexed(allOrder) { index, item ->
+            OrderCard(orderName = item.name, orderMenuList = orderMenuList[item.id])
+
         }
     }
 }
 
 @Composable
-fun OrderCard(orderName: String, orderMenuList: List<OrderMenuItem>) {
+fun OrderCard(orderName: String, orderMenuList: List<OrderMenuItem>?) {
+
     val isChecked = remember { mutableStateOf(false) }
     val isClicked = remember { mutableStateOf(false) }
 
@@ -210,18 +228,20 @@ fun OrderCard(orderName: String, orderMenuList: List<OrderMenuItem>) {
             )
         ) {
             if (isClicked.value) {
-                ShowDialog(orderName, orderMenuList, isClicked = isClicked)
+                if (!orderMenuList.isNullOrEmpty()) {
+                    ShowDialog(orderName, orderMenuList, isClicked = isClicked)
+                }
             }
-            Text(text = orderName, fontSize = 25.sp)
         }
+
+        Text(text = orderName, fontSize = 25.sp)
     }
-    Spacer(modifier = Modifier.padding(8.dp))
 }
 
 @Composable
 fun ShowDialog(
     orderName: String,
-    orderMenuList: List<OrderMenuItem>,
+    orderMenuList: List<OrderMenuItem>?,
     isClicked: MutableState<Boolean>
 ) {
     AlertDialog(onDismissRequest = { isClicked.value = false },
@@ -235,17 +255,19 @@ fun ShowDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly,
             ) {
-                for (orderMenu in orderMenuList) {
-                    val menuName = orderMenu.menuName
-                    val count = orderMenu.count.toString()
+                if (orderMenuList != null) {
+                    for (orderMenu in orderMenuList) {
+                        val menuName = orderMenu.menuName
+                        val count = orderMenu.count.toString()
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Text(text = menuName)
-                        Text(text = count)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Text(text = menuName)
+                            Text(text = count)
+                        }
                     }
                 }
             }
