@@ -63,10 +63,14 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
 
     // Euphony
-    implementation name: 'euphony-0.7.1.6', ext: 'aar'
-
+    // implementation name: 'euphony-0.7.1.6', ext: 'aar'
 
     // Room DB
     def room_version = "2.4.2"
-    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+
+    // Coroutine
+    def coroutine_version = "1.6.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
 }
