@@ -13,11 +13,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OrderWith">
         <activity
-            android:name=".StoreOrderActivity"
-            android:exported="false"
-            android:label="@string/title_activity_store_order"
-            android:theme="@style/Theme.OrderWith" />
-        <activity
             android:name=".StoreActivity"
             android:exported="false"
             android:label="@string/title_activity_store"
