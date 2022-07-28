@@ -23,7 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
             if (instance == null) {
                 synchronized(AppDatabase::class) {
                     instance = Room.databaseBuilder(
-                        context.applicationContext,
+                        context,
                         AppDatabase::class.java,
                         "OrderWith.db"
                     ).build()
