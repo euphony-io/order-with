@@ -36,26 +36,31 @@ import com.euphonyio.orderwith.data.dto.Menu
 import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.OrderMenuItem
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
+import kotlinx.coroutines.*
 
 class StoreActivity : ComponentActivity() {
-    private val dbUtil = DBUtil(this)
+    private lateinit var dbUtil : DBUtil
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val allMenu = dbUtil.getAllMenu()
+
+        dbUtil = DBUtil(this)
+        var allMenu = listOf<Menu>()
+        runBlocking {
+            delay(50000)
+            allMenu = dbUtil.getAllMenu()
+
+        }
         val mTxManager = EuTxManager(this)
         val mRxManager = EuRxManager()
 
         setContent {
-            testdata(dbUtil)
-
             OrderWithTheme() {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    InitView()
-
+                    InitView(dbUtil)
                 }
             } //  # Activate Listener when there is menudata & Start listen
             var listenOn = setListener(allMenu)
@@ -97,8 +102,7 @@ class StoreActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
+   }
 }
 
 //페이지 접속 시 한 번만 작동
@@ -130,31 +134,16 @@ fun goAddMenu(context: Context) {
 }
 
 @Composable
-fun InitView() {
+fun InitView(dbUtil:DBUtil) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TopBar()
-        //OrderList(dbUtil)
-
+        OrderList(dbUtil)
     }
 }
-
-@Composable
-fun TestInitView(allOrder: List<Order>, orderMenuList:List<OrderMenuItem>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        TopBar()
-        TestOrderList(allOrder,orderMenuList)
-
-    }
-}
-
 
 @Composable
 fun TopBar() {
@@ -179,33 +168,20 @@ fun TopBar() {
 
 @Composable
 fun OrderList(dbUtil: DBUtil) {
-    val allOrder = dbUtil.getAllOrder()
+    val coroutine = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
     LazyColumn(
         modifier = Modifier.padding(30.dp),
         state = scrollState,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        for (order in allOrder) {
-            val orderMenuList = dbUtil.getAllWithMenuByOrderId(order.id)
-            item {
-                OrderCard(orderName = order.name, orderMenuList = orderMenuList)
-            }
-        }
-    }
-}
-
-@Composable
-fun TestOrderList(allOrder: List<Order>, orderMenuList:List<OrderMenuItem>) {
-    val scrollState = rememberLazyListState()
-    LazyColumn(
-        modifier = Modifier.padding(30.dp),
-        state = scrollState,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        for (order in allOrder) {
-            item {
-                OrderCard(orderName = order.name, orderMenuList = orderMenuList)
+        coroutine.launch {
+            val allOrder = dbUtil.getAllOrder()
+            for (order in allOrder) {
+                val orderMenuList = dbUtil.getAllWithMenuByOrderId(order.id)
+                item {
+                    OrderCard(orderName = order.name, orderMenuList = orderMenuList)
+                }
             }
         }
     }
@@ -283,16 +259,6 @@ fun ShowDialog(
             }
         }
     )
-}
-
-fun testdata(dbUtil: DBUtil) {
-    for (i in 1..10) {
-        dbUtil.addOrder("order$")
-        for (j in 1..4) {
-            dbUtil.addMenu("menu$j", "desc$j", j)
-            dbUtil.addOrderMenu(i, j, j * j)
-        }
-    }
 }
 
 @Composable
