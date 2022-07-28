@@ -66,8 +66,16 @@ dependencies {
     implementation files('libs/euphony_0.7.1.6.aar')
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 
-
     // Room DB
     def room_version = "2.4.2"
     implementation "androidx.room:room-runtime:$room_version"
+
+    //preview test
+    implementation "androidx.room:room-ktx:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+
+
+    // Coroutine
+    def coroutine_version = "1.6.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
 }
