@@ -27,9 +27,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
-import euphony.lib.receiver.AcousticSensor
-
-import euphony.lib.receiver.EuRxManager
+//import euphony.lib.receiver.AcousticSensor
+//
+//import euphony.lib.receiver.EuRxManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,5 +1,6 @@
 package com.euphonyio.orderwith
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
@@ -34,14 +35,8 @@ class CustomerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            OrderWithTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background) {
-                    // Main UI
-                    CustomerView()
-                }
-            }
+            // Main UI
+            CustomerView()
         }
 
 //        val mRxManager: EuRxManager = EuRxManager()
@@ -174,45 +169,48 @@ fun MenuListItem() {
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Spacer(modifier = Modifier.padding(5.dp))
+                    count = MenuCountingButton(count)
                     // decrease count button
-                    Icon(
-                        modifier = Modifier
-                            .clickable { }
-                            .background(
-                                color = Color.LightGray,
-                                shape = RoundedCornerShape(
-                                    topStart = 8.dp,
-                                    bottomStart = 8.dp
-                                )
-                            )
-                            .padding(horizontal = 6.dp, vertical = 8.dp),
-                        painter = painterResource(id = R.drawable.ic_minus_count),
-                        contentDescription = null
-                    )
-                    Text(
-                        text = count.toString(),
-                        modifier = Modifier
-                            .padding(0.dp)
-                            .width(30.dp)
-                            .height(30.dp)
-                            .align(Alignment.CenterVertically),
-                        textAlign = TextAlign.Center,
-                    )
-                    // increase count button
-                    ClickableText(
-                        text = AnnotatedString("+"),
-                        modifier = Modifier
-                            .background(
-                                color = Color.LightGray,
-                                shape = RoundedCornerShape(
-                                    topEnd = 8.dp,
-                                    bottomEnd = 8.dp
-                                )
-                            )
-                            .padding(horizontal = 9.dp, vertical = 5.dp),
-                        style = Typography.body1,
-                        onClick = {}
-                    )
+//                    Icon(
+//                        modifier = Modifier
+//                            .clickable { }
+//                            .background(
+//                                color = Color.LightGray,
+//                                shape = RoundedCornerShape(
+//                                    topStart = 8.dp,
+//                                    bottomStart = 8.dp
+//                                )
+//                            )
+//                            .padding(horizontal = 6.dp, vertical = 8.dp),
+//                        painter = painterResource(id = R.drawable.ic_minus_count),
+//                        contentDescription = null
+//                    )
+//                    Box(contentAlignment = Alignment.Center) {
+//                        Text(
+//                            text = count.toString(),
+//                            modifier = Modifier
+//                                .padding(0.dp)
+//                                .width(30.dp)
+//                                .height(30.dp),
+//                            fontSize = Typography.h6.fontSize,
+//                            textAlign = TextAlign.Center,
+//                        )
+//                    }
+//                    // increase count button
+//                    ClickableText(
+//                        text = AnnotatedString("+"),
+//                        modifier = Modifier
+//                            .background(
+//                                color = Color.LightGray,
+//                                shape = RoundedCornerShape(
+//                                    topEnd = 8.dp,
+//                                    bottomEnd = 8.dp
+//                                )
+//                            )
+//                            .padding(horizontal = 9.dp, vertical = 5.dp),
+//                        style = Typography.body1,
+//                        onClick = {}
+//                    )
                 }
                 Spacer(modifier = Modifier.padding(5.dp))
                 // TODO: Cost 설정
@@ -230,6 +228,55 @@ fun MenuListItem() {
             Spacer(modifier = Modifier.padding(5.dp))
         }
     }
+}
+
+@SuppressLint("ComposableNaming")
+@Composable
+fun MenuCountingButton(count: Int): Int {
+    // decrease count button
+    Icon(
+        modifier = Modifier
+            .clickable { }
+            .background(
+                color = Color.LightGray,
+                shape = RoundedCornerShape(
+                    topStart = 8.dp,
+                    bottomStart = 8.dp
+                )
+            )
+            .padding(horizontal = 6.dp, vertical = 8.dp),
+        painter = painterResource(id = R.drawable.ic_minus_count),
+        contentDescription = null
+    )
+    // current count text
+    Box(contentAlignment = Alignment.Center) {
+        Text(
+            text = count.toString(),
+            modifier = Modifier
+                .padding(0.dp)
+                .width(30.dp)
+                .height(30.dp),
+            fontSize = Typography.h6.fontSize,
+            textAlign = TextAlign.Center,
+        )
+    }
+    // increase count button
+    ClickableText(
+        text = AnnotatedString("+"),
+        modifier = Modifier
+            .background(
+                color = Color.LightGray,
+                shape = RoundedCornerShape(
+                    topEnd = 8.dp,
+                    bottomEnd = 8.dp
+                )
+            )
+            .padding(horizontal = 9.dp, vertical = 5.dp),
+        style = Typography.body1,
+        onClick = {}
+    )
+
+    return count
 }
 
 @Composable
@@ -315,9 +362,6 @@ fun CheckOrderDialog(
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview2() {
-    OrderWithTheme {
-//        CustomerView()
-        MenuList(modifier = Modifier)
-//        MenuListItem()
-    }
+//    CustomerView()
+    MenuList(modifier = Modifier)
 }
