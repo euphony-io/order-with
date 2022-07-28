@@ -13,29 +13,29 @@ import com.euphonyio.orderwith.data.dto.Menu
 @Dao
 interface MenuDao {
     @Query("SELECT * FROM Menu")
-    fun getAll(): List<Menu>
+    suspend fun getAll(): List<Menu>
 
     @Query("SELECT * FROM Menu WHERE id IN (:menuIds)")
-    fun loadAllByIds(menuIds: IntArray): List<Menu>
+    suspend fun loadAllByIds(menuIds: IntArray): List<Menu>
 
     @Query("SELECT * FROM Menu WHERE name = (:menuName)")
-    fun findByName(menuName: String): Menu
+    suspend fun findByName(menuName: String): Menu
 
     @Query("SELECT * FROM Menu WHERE id = (:menuId)")
-    fun findById(menuId: Int): Menu
+    suspend fun findById(menuId: Int): Menu
 
     @Query("SELECT id FROM Menu order by id desc limit 1")
-    fun getLastId(): Int
+    suspend fun getLastId(): Int?
 
     @Insert
-    fun insertAll(vararg menus: Menu) : List<Long>
+    suspend fun insertAll(vararg menus: Menu) : List<Long>
 
     @Insert
-    fun insertMenu(menu: Menu) : Long
+    suspend fun insertMenu(menu: Menu) : Long
 
     @Delete
-    fun delete(menu: Menu)
+    suspend fun delete(menu: Menu)
 
     @Query("DELETE FROM Menu")
-    fun deleteAll()
+    suspend fun deleteAll()
 }

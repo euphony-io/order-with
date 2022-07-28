@@ -1,63 +1,80 @@
 package com.euphonyio.orderwith
 
 import android.os.Bundle
-import android.widget.EditText
-import android.widget.Space
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.euphonyio.orderwith.data.DBUtil
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
+import kotlinx.coroutines.launch
 
 class StoreActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             OrderWithTheme {
-                //AddMenuDialog(onDismissRequest = {})
+                // showMenuDialog()
             }
         }
     }
 }
 
+// 메뉴 주문 다이얼로그 버튼 이걸로 사용하시면 됩니다!
 @Composable
-fun AddMenuDialog(
+fun showMenuDialog() {
+    val visible = remember { mutableStateOf(false) }
+    if (visible.value) {
+        DialogContent(
+            onDismissRequest = { visible.value = false }
+        )
+    }
+    Surface {
+        Button(onClick = { visible.value = true }) {
+            Text(text = "test")
+        }
+    }
+}
+
+@Composable
+fun DialogContent(
     onDismissRequest: () -> Unit,
-    properties: DialogProperties = DialogProperties()
+    properties: DialogProperties = DialogProperties(),
 ) {
-    var text by remember { mutableStateOf("") }
+    var textName by remember { mutableStateOf("") }
+    var textDescription by remember { mutableStateOf("") }
+    var textCost by remember { mutableStateOf("") }
+    val util = DBUtil(context = LocalContext.current)
+    val coroutineScope = rememberCoroutineScope()
+
     Dialog(
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = { onDismissRequest() },
         properties = properties
     ) {
         Surface(
@@ -68,48 +85,49 @@ fun AddMenuDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 TextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = textName,
+                    onValueChange = { textName = it },
                     label = { Text("Name") },
                     modifier = Modifier
                         .padding(all = 10.dp),
                     colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White)
+                        backgroundColor = Color.White
+                    )
                 )
                 TextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = textDescription,
+                    onValueChange = { textDescription = it },
                     label = { Text("Description") },
                     modifier = Modifier
                         .padding(all = 10.dp),
                     colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White)
+                        backgroundColor = Color.White
+                    )
 
                 )
                 TextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text("Image") },
-                    modifier = Modifier
-                        .padding(all = 10.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White)
-                )
-                TextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = textCost,
+                    onValueChange = { textCost = it },
                     label = { Text("cost") },
                     modifier = Modifier
                         .padding(all = 10.dp),
                     colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White)
+                        backgroundColor = Color.White
+                    )
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 Row {
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = {},
+                        onClick = {
+                            coroutineScope.launch {
+                                val menu = util.getAllMenu()
+                                Log.d("menu", menu.toString())
+                                onDismissRequest()
+                            }
+
+                        },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("CANCEL")
@@ -118,7 +136,16 @@ fun AddMenuDialog(
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = {},
+                        onClick = {
+                            coroutineScope.launch {
+                                util.addMenu(
+                                    name = textName,
+                                    description = textDescription,
+                                    cost = textCost.toInt()
+                                )
+                                onDismissRequest()
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("ADD")
@@ -134,7 +161,6 @@ fun AddMenuDialog(
 @Composable
 fun DefaultPreview3() {
     OrderWithTheme {
-        //AddDialog(onDismissRequest = {})
-
+        showMenuDialog()
     }
 }
