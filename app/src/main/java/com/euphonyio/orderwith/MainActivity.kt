@@ -27,8 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
-//import euphony.lib.receiver.AcousticSensor
-//import euphony.lib.receiver.EuRxManager
+// import euphony.lib.receiver.AcousticSensor
+// import euphony.lib.receiver.EuRxManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,7 +50,7 @@ fun Main() {
             .fillMaxHeight(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-            ){
+    ){
         Text(
             modifier = Modifier
                 .padding(bottom = 30.dp),
@@ -66,9 +66,9 @@ fun Main() {
                 Image(painterResource(R.drawable.customer),"content description")
                 Button(
                     modifier = Modifier.padding(
-                    top = 16.dp,
-                    start = 30.dp,
-                    end = 30.dp,
+                        top = 16.dp,
+                        start = 30.dp,
+                        end = 30.dp,
                     ),
                     onClick = {
                         goCustomer(context = context)
@@ -86,12 +86,12 @@ fun Main() {
                 Image(painterResource(R.drawable.shops),"content description")
                 Button(
                     modifier = Modifier.padding(
-                    top = 16.dp,
-                    start = 30.dp,
-                    end = 30.dp,
+                        top = 16.dp,
+                        start = 30.dp,
+                        end = 30.dp,
                     ),
                     onClick = {
-                              goStore(context = context)
+                        goStore(context = context)
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                 ) {
@@ -109,11 +109,11 @@ fun goStore(context: Context) {
 fun goCustomer(context: Context) {
     context.startActivity(Intent(context, CustomerActivity::class.java))
 }
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun DefaultPreview() {
-//    OrderWithTheme {
-//        Main()
-//    }
-//}
+
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    OrderWithTheme {
+        Main()
+    }
+}
