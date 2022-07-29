@@ -24,7 +24,7 @@ interface OrderMenuDao {
     suspend fun getAllByOrderId(orderId: Int): List<OrderMenuItem>
 
     @Query("SELECT id FROM OrderMenu order by id desc limit 1")
-    suspend fun getLastId() : Int
+    suspend fun getLastId() : Int?
 
     @Insert
     suspend fun insertAll(vararg orderMenus: OrderMenu)
