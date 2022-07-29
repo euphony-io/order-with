@@ -68,14 +68,7 @@ class StoreActivity : ComponentActivity() {
         }
 
         setContent {
-            OrderWithTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    InitView(dbUtil)
-                }
-            }
+            InitView(dbUtil)
         }
 
         var orderContent = ""
@@ -199,6 +192,9 @@ fun InitView(dbUtil: DBUtil) {
             .fillMaxWidth()
             .fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // TODO: RxManager가 리슨하고 있지 않아요. 디비 데이터가 있을 때 없을 때에 따라 나눠져있다면 알려주세요!
+        // TODO: 현재 메뉴추가 버튼에 함수 구현이 되어있지 않아서 메뉴 추가할 수가 없습니다 ㅠ.ㅠ
+
         TopBar()
         OrderList(dbUtil)
     }
@@ -351,7 +347,10 @@ fun AddMenuDialog(
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties()
 ) {
-    var text by remember { mutableStateOf("") }
+    var nameText by remember { mutableStateOf("") }
+    var descriptionText by remember { mutableStateOf("") }
+    var costText by remember { mutableStateOf("") }
+
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = properties
@@ -364,8 +363,8 @@ fun AddMenuDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 TextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = nameText,
+                    onValueChange = { nameText = it },
                     label = { Text("Name") },
                     modifier = Modifier
                         .padding(all = 10.dp),
@@ -374,8 +373,8 @@ fun AddMenuDialog(
                     )
                 )
                 TextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = descriptionText,
+                    onValueChange = { descriptionText = it },
                     label = { Text("Description") },
                     modifier = Modifier
                         .padding(all = 10.dp),
@@ -385,18 +384,8 @@ fun AddMenuDialog(
 
                 )
                 TextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text("Image") },
-                    modifier = Modifier
-                        .padding(all = 10.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White
-                    )
-                )
-                TextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = costText,
+                    onValueChange = { costText = it },
                     label = { Text("cost") },
                     modifier = Modifier
                         .padding(all = 10.dp),
@@ -409,7 +398,7 @@ fun AddMenuDialog(
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = {},
+                        onClick = onDismissRequest,
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("CANCEL")
@@ -418,7 +407,7 @@ fun AddMenuDialog(
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = {},
+                        onClick = { /*TODO: 디비에 메뉴추가*/ },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("ADD")
