@@ -213,12 +213,15 @@ fun TopBar() {
         Text(text = stringResource(id = R.string.title_orderlist), fontSize = 30.sp)
         IconButton(
             modifier = Modifier.size(50.dp),
-            onClick = { goAddMenu(context = context) }) {
+            onClick = { isClicked.value = !isClicked.value  }) {
             Icon(
                 Icons.Outlined.AddCircle,
                 "go to add"
             )
-        }
+            if(isClicked.value){
+                AddMenuDialog(onDismissRequest = {})
+            }
+         }
     }
 
 }
@@ -327,10 +330,91 @@ fun ShowDialog(
     )
 }
 
+Composable
+fun AddMenuDialog(
+    onDismissRequest: () -> Unit,
+    properties: DialogProperties = DialogProperties()
+) {
+    var text by remember { mutableStateOf("") }
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = properties
+    ) {
+        Surface(
+            color = Color.White
+        ) {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                TextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Name") },
+                    modifier = Modifier
+                        .padding(all = 10.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color.White
+                    )
+                )
+                TextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Description") },
+                    modifier = Modifier
+                        .padding(all = 10.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color.White
+                    )
+
+                )
+                TextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Image") },
+                    modifier = Modifier
+                        .padding(all = 10.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color.White
+                    )
+                )
+                TextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("cost") },
+                    modifier = Modifier
+                        .padding(all = 10.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color.White
+                    )
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                Row {
+                    Button(
+                        modifier = Modifier
+                            .size(100.dp, 50.dp),
+                        onClick = {},
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
+                    ) {
+                        Text("CANCEL")
+                    }
+                    Spacer(modifier = Modifier.size(20.dp))
+                    Button(
+                        modifier = Modifier
+                            .size(100.dp, 50.dp),
+                        onClick = {},
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
+                    ) {
+                        Text("ADD")
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+        }
+    }
+}
+
 private fun goMain(context: Context) {
     context.startActivity(Intent(context, MainActivity::class.java))
 }
 
-private fun goAddMenu(context: Context) {
-    context.startActivity(Intent(context, StoreActivity::class.java))
-}
