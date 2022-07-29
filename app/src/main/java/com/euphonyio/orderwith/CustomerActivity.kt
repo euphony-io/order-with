@@ -1,11 +1,9 @@
 package com.euphonyio.orderwith
 
 import android.annotation.SuppressLint
-import android.media.AudioFormat
-import android.media.AudioManager
-import android.media.AudioTrack
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
@@ -34,8 +32,8 @@ import androidx.lifecycle.Observer
 import co.euphony.rx.AcousticSensor
 import co.euphony.rx.EuRxManager
 import co.euphony.tx.EuTxManager
-import co.euphony.util.EuOption
 import com.euphonyio.orderwith.model.OrderItem
+import com.euphonyio.orderwith.ui.theme.Orange
 import com.euphonyio.orderwith.ui.theme.Typography
 import kotlinx.coroutines.*
 import java.util.*
@@ -44,6 +42,10 @@ import kotlin.coroutines.CoroutineContext
 
 class CustomerActivity : ComponentActivity(), CoroutineScope {
     val TAG: String = "로그"
+
+    companion object {
+        private const val MENU_REQUEST = "requestMenu"
+    }
 
     private val job = Job()
 
@@ -60,24 +62,6 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
     val listenResult get() = _listenResult
 
     var menuListResponse: List<OrderItem> by mutableStateOf(listOf())
-
-//    val RECORDER_SAMPLERATE = 8000
-//    val RECORDER_CHANNELS = AudioFormat.CHANNEL_CONFIGURATION_STEREO
-//    val RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT
-//
-//    val bufferSizeInBytes = AudioTrack.getMinBufferSize(
-//        RECORDER_SAMPLERATE,
-//        RECORDER_CHANNELS,
-//        RECORDER_AUDIO_ENCODING
-//    )
-//
-//    val audioTrack = AudioTrack(
-//        AudioManager.STREAM_MUSIC,
-//        RECORDER_SAMPLERATE,
-//        RECORDER_CHANNELS,
-//        RECORDER_AUDIO_ENCODING,
-//        bufferSizeInBytes
-//    )
 
     private val txManager: EuTxManager by lazy {
         EuTxManager(applicationContext)
@@ -113,14 +97,11 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
     }
 
     private fun requestMenu() {
-        txManager.setMode(EuOption.ModeType.EUPI)
-        // transmit frequency
         if (isSpeaking.value == false) {
             _listenResult.postValue("")
             _isSpeaking.postValue(true)
 
-            txManager.callEuPI(18500.0, EuTxManager.EuPIDuration.LENGTH_FOREVER)
-//            txManager.setCode("Hello")
+            txManager.setCode(MENU_REQUEST)
             txManager.play(-1)
         } else {
             _isSpeaking.postValue(false)
@@ -134,14 +115,6 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
             _isListening.postValue(false)
             rxManager.finish()
         } else {
-//            rxManager.listen()
-//            _isListening.postValue(true)
-//            rxManager.acousticSensor = AcousticSensor {
-//                _listenResult.postValue(it)
-//                Log.d(TAG, "CustomerViewModel - listen() called :: 수신완료")
-//                _isListening.postValue(false)
-//            }
-//            txManager.stop()
             launch(coroutineContext) {
                 try {
                     // work in I/O thread
@@ -177,16 +150,24 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
     // create menu item list
     private fun parseMenuItem(receivedData: String): ArrayList<OrderItem> {
         val orderItemList = arrayListOf<OrderItem>()
-        receivedData.split("&").forEach {
-            val tmp = it.split("_")
-            orderItemList.add(
-                OrderItem(
-                    id = tmp[0].toInt(),
-                    name = tmp[1],
-                    description = tmp[2],
-                    cost = tmp[3].toInt()
+
+        val receivedList = receivedData.split("&")
+        for (item in receivedList) {
+            // if receivedData is not a menu
+            if (receivedList.first().equals("#").not()) break
+
+            // if item is not the first item
+            else if (item.equals("#").not()) {
+                val tmp = item.split("_")
+                orderItemList.add(
+                    OrderItem(
+                        id = tmp[0].toInt(),
+                        name = tmp[1],
+                        description = tmp[2],
+                        cost = tmp[3].toInt()
+                    )
                 )
-            )
+            }
         }
         return orderItemList
     }
@@ -196,7 +177,6 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
             isSpeaking.postValue(true)
 
             val order = makeDataToString()
-            txManager.setMode(EuOption.ModeType.DEFAULT)
             txManager.setCode(order)
             txManager.play(-1)
         } else {
@@ -206,7 +186,7 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
     }
 
     private fun makeDataToString(): String {
-        var stringData = ""
+        var stringData = "#&"
         for (item in menuListResponse) {
             if (item.count != 0) {
                 stringData += item.id.toString() + "_"
@@ -261,10 +241,10 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
             // Cancel Button
             Button(
                 modifier = Modifier
-                    .padding(horizontal = 12.dp)
-                    .background(color = Color.White),
+                    .padding(horizontal = 12.dp),
                 onClick = { onBackPressedDispatcher?.onBackPressed() },
                 shape = RoundedCornerShape(3.dp),
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
             ) {
                 Text(text = "Cancel",
                     style = Typography.body1
@@ -303,10 +283,9 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
         Surface {
             Row(
                 modifier = Modifier
-                    .padding(10.dp)
+                    .padding(vertical = 10.dp, horizontal = 13.dp)
                     .fillMaxWidth()
             ) {
-//                Spacer(modifier = Modifier.padding(5.dp))
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -317,10 +296,11 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
                         text = orderItem.name ?: "FoodName",
                         style = Typography.h5
                     )
-                    Spacer(modifier = Modifier.padding(3.dp))
                     // description
                     Surface(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .padding(vertical = 3.dp)
+                            .fillMaxWidth()
                     ) {
                         Text(
                             text = orderItem.description ?: "description\n\n",
@@ -331,28 +311,17 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                    Spacer(modifier = Modifier.padding(3.dp))
                 }
-                Spacer(modifier = Modifier.padding(3.dp))
                 Column(
                     modifier = Modifier
+                        .padding(start = 3.dp, end = 5.dp, top = 10.dp, bottom = 5.dp)
                         .fillMaxSize()
                         .weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Spacer(modifier = Modifier.padding(10.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Spacer(modifier = Modifier.padding(5.dp))
-                        count = MenuCountingButton(count)
-                        // TODO: count값을 LiveData로 만들어서 해야할듯?
-//                        menuListResponse[index].count = count
-                        orderItem.count = count
-                    }
-                    Spacer(modifier = Modifier.padding(5.dp))
+                    count = MenuCountingButton(count)
+                    orderItem.count = count
                     // itemCost
                     val cost = orderItem.cost
                     val itemTotalCost: String =
@@ -361,13 +330,13 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
                             cost * count)
                     Text(
                         text = itemTotalCost,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .padding(top = 10.dp, bottom = 3.dp)
+                            .fillMaxWidth(),
                         style = Typography.h6,
                         textAlign = TextAlign.Center,
                     )
-                    Spacer(modifier = Modifier.padding(3.dp))
                 }
-//                Spacer(modifier = Modifier.padding(5.dp))
             }
         }
     }
@@ -378,48 +347,50 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
 
         var itemCount by remember { mutableStateOf(count) }
 
-        // decrease count button
-        Icon(
-            modifier = Modifier
-                .clickable { if (0 < count) itemCount-- }
-                .background(
-                    color = Color.LightGray,
-                    shape = RoundedCornerShape(
-                        topStart = 8.dp,
-                        bottomStart = 8.dp
-                    )
-                )
-                .padding(horizontal = 6.dp, vertical = 8.dp),
-            painter = painterResource(id = R.drawable.ic_minus_count),
-            contentDescription = null
-        )
-        // current count text
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = count.toString(),
+        Row() {
+            // decrease count button
+            Icon(
                 modifier = Modifier
-                    .padding(0.dp)
-                    .width(30.dp)
-                    .height(30.dp),
-                fontSize = Typography.h6.fontSize,
-                textAlign = TextAlign.Center,
+                    .clickable { if (0 < count) itemCount-- }
+                    .background(
+                        color = Color.LightGray,
+                        shape = RoundedCornerShape(
+                            topStart = 8.dp,
+                            bottomStart = 8.dp
+                        )
+                    )
+                    .padding(horizontal = 6.dp, vertical = 8.dp),
+                painter = painterResource(id = R.drawable.ic_minus_count),
+                contentDescription = null
+            )
+            // current count text
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = count.toString(),
+                    modifier = Modifier
+                        .padding(0.dp)
+                        .width(30.dp)
+                        .height(30.dp),
+                    fontSize = Typography.h6.fontSize,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            // increase count button
+            ClickableText(
+                text = AnnotatedString("+"),
+                modifier = Modifier
+                    .background(
+                        color = Color.LightGray,
+                        shape = RoundedCornerShape(
+                            topEnd = 8.dp,
+                            bottomEnd = 8.dp
+                        )
+                    )
+                    .padding(horizontal = 9.dp, vertical = 5.dp),
+                style = Typography.body1,
+                onClick = { if (count < 10) itemCount++ }
             )
         }
-        // increase count button
-        ClickableText(
-            text = AnnotatedString("+"),
-            modifier = Modifier
-                .background(
-                    color = Color.LightGray,
-                    shape = RoundedCornerShape(
-                        topEnd = 8.dp,
-                        bottomEnd = 8.dp
-                    )
-                )
-                .padding(horizontal = 9.dp, vertical = 5.dp),
-            style = Typography.body1,
-            onClick = { if (count < 10) itemCount++ }
-        )
 
         return itemCount
     }
@@ -439,6 +410,7 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
                     openDialog.value = true
                 },
                 shape = RoundedCornerShape(3.dp),
+                colors = ButtonDefaults.buttonColors(backgroundColor = Orange)
             ) {
                 Text(text = "Send Order",
                     style = Typography.body1
@@ -480,9 +452,9 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
                         Button(
                             onClick = onDismiss,
                             modifier = Modifier
-                                .padding(8.dp)
-                                .background(color = Color.White),
-                            shape = RoundedCornerShape(5.dp)
+                                .padding(8.dp),
+                            shape = RoundedCornerShape(5.dp),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                         ) {
                             Text(
                                 text = "Cancel",
@@ -494,12 +466,13 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
                         Button(
                             onClick = {
                                 transmitOrder()
-
+                                Toast.makeText(applicationContext,
+                                    "Order Success",
+                                    Toast.LENGTH_LONG).show()
                             },
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .background(color = Color.White),
-                            shape = RoundedCornerShape(5.dp)
+                            modifier = Modifier.padding(8.dp),
+                            shape = RoundedCornerShape(5.dp),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Orange)
                         ) {
                             Text(
                                 text = "OK",

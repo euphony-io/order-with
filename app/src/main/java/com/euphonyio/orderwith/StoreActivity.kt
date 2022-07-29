@@ -40,17 +40,8 @@ import kotlinx.coroutines.launch
 
 class StoreActivity : ComponentActivity() {
 
-    private val rxManager: EuRxManager by lazy {
-        EuRxManager()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        rxManager.listen()
-        rxManager.acousticSensor = AcousticSensor {
-            Toast.makeText(applicationContext, "수신완료", Toast.LENGTH_LONG).show()
-        }
-
         setContent {
             OrderWithTheme {
                 // showMenuDialog()
