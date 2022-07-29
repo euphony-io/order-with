@@ -80,7 +80,7 @@ class StoreActivity : ComponentActivity() {
 
         var orderContent = ""
         mRxManager.acousticSensor = AcousticSensor { letters ->
-            if (letters == "MENU_REQUEST") {
+            if (letters == MENU_REQUEST) {
                 flag.value = MENU_REQUEST
             } else {
                 flag.value = letters.substring(0..1)
