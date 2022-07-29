@@ -12,7 +12,7 @@ import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.OrderMenu
 import java.lang.Exception
 
-@Database(entities = [ Order::class, Menu::class, OrderMenu::class], version = 3)
+@Database(entities = [ Order::class, Menu::class, OrderMenu::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
 
     companion object {

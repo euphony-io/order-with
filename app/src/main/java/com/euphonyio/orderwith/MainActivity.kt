@@ -2,7 +2,9 @@ package com.euphonyio.orderwith
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -26,15 +28,43 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
-// import euphony.lib.receiver.AcousticSensor
-// import euphony.lib.receiver.EuRxManager
 
 class MainActivity : ComponentActivity() {
+
+    private val permissions: Array<String> = arrayOf(
+        android.Manifest.permission.RECORD_AUDIO
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestPermissions(permissions)
+
         setContent {
             Main()
+        }
+    }
+
+    private fun requestPermissions(permissions: Array<String>) {
+        val denied = permissions.count { checkSelfPermission(it) == PackageManager.PERMISSION_DENIED }
+        if (denied > 0) {
+            ActivityCompat.requestPermissions(this, permissions, 0)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 0) {
+            val denied = permissions.count { checkSelfPermission(it) == PackageManager.PERMISSION_DENIED }
+            if (denied > 0) {
+                Toast.makeText(applicationContext, "You should get permissions to use euphony-hub", Toast.LENGTH_LONG).show()
+                finish()
+            }
         }
     }
 }
