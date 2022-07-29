@@ -2,6 +2,7 @@ package com.euphonyio.orderwith
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -31,11 +32,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import co.euphony.rx.AcousticSensor
+import co.euphony.rx.EuRxManager
 import com.euphonyio.orderwith.data.DBUtil
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
 import kotlinx.coroutines.launch
 
 class StoreActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
