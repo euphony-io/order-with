@@ -29,6 +29,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.MutableLiveData
 import co.euphony.rx.AcousticSensor
 import co.euphony.rx.EuRxManager
@@ -39,13 +41,19 @@ import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.OrderMenuItem
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
 import kotlinx.coroutines.*
+import java.sql.Types.NULL
 
 class StoreActivity : ComponentActivity() {
+    companion object {
+        private const val MENU_REQUEST = "requestMenu"
+        private const val ORDER_REQUEST = "#&"
+    }
+
     private val TAG = "[StoreActivity]"
     private lateinit var dbUtil: DBUtil
     private lateinit var mTxManager: EuTxManager
     private lateinit var mRxManager: EuRxManager
-    private var flag = MutableLiveData<Int>()
+    private var flag = MutableLiveData("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,21 +78,22 @@ class StoreActivity : ComponentActivity() {
             }
         }
 
-        if (mRxManager.listen(RequestCodeEnum.MENU_REQUEST.code)) {
-            flag.value = RequestCodeEnum.MENU_REQUEST.code
-        }
-
-        if (mRxManager.listen(RequestCodeEnum.ORDER_REQUEST.code)) {
-            flag.value = RequestCodeEnum.ORDER_REQUEST.code
+        var orderContent = ""
+        mRxManager.acousticSensor = AcousticSensor { letters ->
+            if (letters == MENU_REQUEST) {
+                flag.value = MENU_REQUEST
+            } else {
+                flag.value = letters.substring(0..1)
+                orderContent = letters.substring(2)
+            }
         }
 
         flag.observe(this) { flag ->
             var speakOn = false
 
             when (flag) {
-                RequestCodeEnum.MENU_REQUEST.code -> {
+                MENU_REQUEST -> {
                     Log.i(TAG, "Receive Menu Request.")
-                    // # when receive 18500hw (request for menu) : send menudata
                     if (speakOn) {
                         mTxManager.stop()
                     }
@@ -92,32 +101,34 @@ class StoreActivity : ComponentActivity() {
                     sendMenu(allMenu, mTxManager)
                     speakOn = true
                 }
-
-                RequestCodeEnum.ORDER_REQUEST.code -> {
+                ORDER_REQUEST -> {
                     Log.i(TAG, "Receive Order Request.")
-                    // # when receive 20500hw (request for order) : save order
                     if (speakOn) {
                         mTxManager.stop()
                     }
-                    receiveOrder(mRxManager, dbUtil)
+                    if (orderContent.isNullOrEmpty()) {
+                        Log.i(TAG, "Receive Wrong Data.")
+                    } else {
+                        receiveOrder(orderContent, dbUtil)
 
-                    setContent {
-                        Column {
-                            TopBar()
-                            OrderList(dbUtil = dbUtil)
+                        setContent {
+                            Column {
+                                TopBar()
+                                OrderList(dbUtil = dbUtil)
+                            }
                         }
                     }
                 }
                 else -> {
-                    //Nothing to receive
+                    Log.i(TAG, "Receive Wrong Data.")
+                    //nothing received
                 }
             }
         }
-
     }
 
 
-    private fun receiveOrder(mRxManager: EuRxManager, dbUtil: DBUtil) {
+    private fun receiveOrder(letters: String, dbUtil: DBUtil) {
         fun showErrorToast(logMsg: String) {
             Log.i(TAG, logMsg)
             Toast.makeText(
@@ -127,46 +138,45 @@ class StoreActivity : ComponentActivity() {
             ).show()
         }
 
-        mRxManager.acousticSensor = AcousticSensor { letters ->
-            val newOrder = (letters.split("&"))
-            CoroutineScope(Dispatchers.IO).launch {
-                for (menus in newOrder) {
-                    val saveOrder = menus.split("_")
-                    if (saveOrder.size != 3) {
-                        showErrorToast("Order size is ${saveOrder.size}")
-                        continue
-                    }
+        val newOrder = (letters.split("&"))
+        CoroutineScope(Dispatchers.IO).launch {
+            for (menus in newOrder) {
+                val saveOrder = menus.split("_")
+                if (saveOrder.size != 3) {
+                    showErrorToast("Order size is ${saveOrder.size}")
+                    continue
+                }
 
-                    val orderName = saveOrder[1]
-                    val menuId = saveOrder[0]
-                    val count = saveOrder[2]
-                    val orderId = dbUtil.addOrder(orderName)
+                val orderName = saveOrder[1]
+                val menuId = saveOrder[0]
+                val count = saveOrder[2]
+                val orderId = dbUtil.addOrder(orderName)
 
-                    if (orderId == null) {
-                        showErrorToast("OrderId is NULL")
-                        continue
-                    }
+                if (orderId == null) {
+                    showErrorToast("OrderId is NULL")
+                    continue
+                }
 
-                    try {
-                        val orderMenuId =
-                            dbUtil.addOrderMenu(orderId, menuId.toInt(), count.toInt())
-                        if (orderMenuId == null) {
-                            dbUtil.deleteOrder(orderId)
-                            showErrorToast("OrderMenuId is NULL")
-                        } else {
-                            Toast.makeText(
-                                this@StoreActivity,
-                                this@StoreActivity.resources.getString(R.string.store_addorder_success),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    } catch (e: Exception) {
-                        showErrorToast("addOrderMenu :: ${e.message}")
+                try {
+                    val orderMenuId =
+                        dbUtil.addOrderMenu(orderId, menuId.toInt(), count.toInt())
+                    if (orderMenuId == null) {
+                        dbUtil.deleteOrder(orderId)
+                        showErrorToast("OrderMenuId is NULL")
+                    } else {
+                        Toast.makeText(
+                            this@StoreActivity,
+                            this@StoreActivity.resources.getString(R.string.store_addorder_success),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
+                } catch (e: Exception) {
+                    showErrorToast("addOrderMenu :: ${e.message}")
                 }
             }
         }
     }
+
 
     private fun sendMenu(allMenu: List<Menu>, mTxManager: EuTxManager) {
         var menuData = ""
@@ -197,6 +207,7 @@ fun InitView(dbUtil: DBUtil) {
 @Composable
 fun TopBar() {
     val context = LocalContext.current
+    val isClicked = remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -213,15 +224,16 @@ fun TopBar() {
         Text(text = stringResource(id = R.string.title_orderlist), fontSize = 30.sp)
         IconButton(
             modifier = Modifier.size(50.dp),
-            onClick = { isClicked.value = !isClicked.value  }) {
+            onClick = { isClicked.value = !isClicked.value }) {
             Icon(
                 Icons.Outlined.AddCircle,
                 "go to add"
             )
-            if(isClicked.value){
+            if (isClicked.value) {
                 AddMenuDialog(onDismissRequest = {})
             }
-         }
+
+        }
     }
 
 }
@@ -330,7 +342,11 @@ fun ShowDialog(
     )
 }
 
-Composable
+private fun goMain(context: Context) {
+    context.startActivity(Intent(context, MainActivity::class.java))
+}
+
+@Composable
 fun AddMenuDialog(
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties()
@@ -413,8 +429,3 @@ fun AddMenuDialog(
         }
     }
 }
-
-private fun goMain(context: Context) {
-    context.startActivity(Intent(context, MainActivity::class.java))
-}
-
