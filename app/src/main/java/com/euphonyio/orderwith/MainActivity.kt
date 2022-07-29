@@ -74,13 +74,13 @@ fun Main() {
 
     val context = LocalContext.current
 
-    Column (
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-    ){
+    ) {
         Text(
             modifier = Modifier
                 .padding(bottom = 30.dp),
@@ -133,11 +133,15 @@ fun Main() {
 }
 
 fun goStore(context: Context) {
-    context.startActivity(Intent(context, StoreActivity::class.java))
+    val intent = Intent(context, StoreActivity::class.java)
+    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+    context.startActivity(intent)
 }
 
 fun goCustomer(context: Context) {
-    context.startActivity(Intent(context, CustomerActivity::class.java))
+    val intent = Intent(context, CustomerActivity::class.java)
+    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+    context.startActivity(intent)
 }
 
 @Preview(showBackground = true)
