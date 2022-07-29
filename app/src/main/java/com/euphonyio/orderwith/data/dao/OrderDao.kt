@@ -28,7 +28,7 @@ interface OrderDao {
     suspend fun findByCreated_at(created_at: Long): Order
 
     @Query("SELECT id FROM 'Order' order by id desc limit 1")
-    suspend fun getLastId() : Int
+    suspend fun getLastId() : Int?
 
     @Insert
     suspend fun insertAll(vararg order: Order)

@@ -2,19 +2,14 @@ package com.euphonyio.orderwith.data
 
 import android.content.Context
 import androidx.room.Room
-import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.Menu
+import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.OrderMenu
 import com.euphonyio.orderwith.data.dto.OrderMenuItem
 import java.util.*
 
 class DBUtil(context: Context) {
-
-    private var db: AppDatabase
-
-    init {
-        db = AppDatabase.getInstance(context)
-    }
+    private var db: AppDatabase = AppDatabase.getInstance(context)
 
     //  < Menu >
     // 1-1. Get all menu (id, name, description, cost)
@@ -78,7 +73,7 @@ class DBUtil(context: Context) {
     // 2. add Order
     suspend fun addOrder(name: String) {
         val dao = db.orderDao()
-        val id = dao.getLastId() + 1
+        val id = (dao.getLastId()?: 0) +1
         val order = Order(id, name, Date().time)
         dao.insertAll(order)
     }
@@ -124,7 +119,7 @@ class DBUtil(context: Context) {
     //2. add OrderMenu
     suspend fun addOrderMenu(orderId: Int, menuId: Int, count: Int) {
         val dao = db.orderMenuDao()
-        val id = dao.getLastId() + 1
+        val id = (dao.getLastId()?: 0) + 1
         val orderMenu = OrderMenu(id, orderId, menuId, count)
         dao.insertAll(orderMenu)
     }
