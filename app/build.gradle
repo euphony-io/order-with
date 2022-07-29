@@ -64,7 +64,7 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
 
     // Euphony
-     implementation name: 'euphony-debug', ext: 'aar'
+     implementation name: 'euphony-0.7.1.6', ext: 'aar'
 
     // Room DB
     def room_version = "2.4.2"
