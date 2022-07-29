@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.EditText
 import android.widget.Space
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import co.euphony.rx.AcousticSensor
 import co.euphony.rx.EuRxManager
 import co.euphony.tx.EuTxManager
 import com.euphonyio.orderwith.data.DBUtil
@@ -39,20 +41,19 @@ import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.OrderMenuItem
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
 import kotlinx.coroutines.*
+import kotlin.reflect.typeOf
 
 class StoreActivity : ComponentActivity() {
     private lateinit var dbUtil: DBUtil
-    val mTxManager = EuTxManager(this)
-    val mRxManager = EuRxManager()
+    private val mTxManager = EuTxManager(this)
+    private val mRxManager = EuRxManager()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dbUtil = DBUtil(this)
 
-        var allMenu = listOf<Menu>()
-
+        var allMenu: List<Menu>
         runBlocking {
-            delay(50000)
             allMenu = dbUtil.getAllMenu()
         }
 
@@ -93,12 +94,11 @@ class StoreActivity : ComponentActivity() {
                     if (speakOn) {
                         mTxManager.stop()
                     }
-                    receiveOrder(mRxManager)
+                    receiveOrder(mRxManager, dbUtil)
                     //TODO: refresh page
                 } else {
                     //Nothing to receive
                 }
-
                 if (!listenOn) {
                     listenOn = true
                 }
@@ -106,6 +106,59 @@ class StoreActivity : ComponentActivity() {
         }
     }
 
+
+    private fun receiveOrder(mRxManager: EuRxManager, dbUtil: DBUtil) {
+        fun showErrorToast(logMsg: String) {
+            Log.i("[StoreActivity]", logMsg)
+            Toast.makeText(
+                this@StoreActivity,
+                this@StoreActivity.resources.getString(R.string.common_error_message),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        //menuId_orderName_count&menuId_orderName....
+        mRxManager.acousticSensor = AcousticSensor { letters ->
+            val newOrder = (letters.split("&"))
+            CoroutineScope(Dispatchers.IO).launch {
+                for (menus in newOrder) {
+                    val saveOrder = menus.split("_")
+                    if (saveOrder.size != 3) {
+                        showErrorToast("Order size is ${saveOrder.size}")
+                        continue
+                    }
+
+                    val orderName = saveOrder[1]
+                    val menuId = saveOrder[0]
+                    val count = saveOrder[2]
+                    val orderId = dbUtil.addOrder(orderName)
+
+                    if (orderId == null) {
+                        showErrorToast("OrderId is NULL")
+                        continue
+                    }
+
+                    try {
+                        val orderMenuId =
+                            dbUtil.addOrderMenu(orderId, menuId.toInt(), count.toInt())
+                        if (orderMenuId == null) {
+                            dbUtil.deleteOrder(orderId)
+                            showErrorToast("OrderMenuId is NULL")
+                        } else {
+                            Toast.makeText(
+                                this@StoreActivity,
+                                this@StoreActivity.resources.getString(R.string.store_addorder_success),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } catch (e: Exception) {
+                        showErrorToast("addOrderMenu :: ${e.message}")
+                    }
+                }
+            }
+
+        }
+    }
 }
 
 //페이지 접속 시 한 번만 작동
@@ -125,8 +178,6 @@ fun sendMenu(allMenu: List<Menu>, mTxManager: EuTxManager) {
     mTxManager.play(-1)
 }
 
-fun receiveOrder(mRxManager: EuRxManager) {
-}
 
 fun goMain(context: Context) {
     context.startActivity(Intent(context, MainActivity::class.java))
@@ -166,7 +217,9 @@ fun TopBar() {
             )
         }
         Text(text = stringResource(id = R.string.title_orderlist), fontSize = 30.sp)
-        IconButton(modifier = Modifier.size(50.dp), onClick = { goAddMenu(context = context) }) {
+        IconButton(
+            modifier = Modifier.size(50.dp),
+            onClick = { goAddMenu(context = context) }) {
             Icon(
                 Icons.Outlined.AddCircle,
                 "go to add"
@@ -282,110 +335,3 @@ fun ShowDialog(
         }
     )
 }
-
-@Composable
-fun AddMenuDialog(
-    onDismissRequest: () -> Unit,
-    properties: DialogProperties = DialogProperties()
-) {
-    var text by remember { mutableStateOf("") }
-    Dialog(
-        onDismissRequest = onDismissRequest,
-        properties = properties
-    ) {
-        Surface(
-            color = Color.White
-        ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                TextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text("Name") },
-                    modifier = Modifier
-                        .padding(all = 10.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White
-                    )
-                )
-                TextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text("Description") },
-                    modifier = Modifier
-                        .padding(all = 10.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White
-                    )
-
-                )
-                TextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text("Image") },
-                    modifier = Modifier
-                        .padding(all = 10.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White
-                    )
-                )
-                TextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text("cost") },
-                    modifier = Modifier
-                        .padding(all = 10.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White
-                    )
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Row {
-                    Button(
-                        modifier = Modifier
-                            .size(100.dp, 50.dp),
-                        onClick = {},
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
-                    ) {
-                        Text("CANCEL")
-                    }
-                    Spacer(modifier = Modifier.size(20.dp))
-                    Button(
-                        modifier = Modifier
-                            .size(100.dp, 50.dp),
-                        onClick = {},
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
-                    ) {
-                        Text("ADD")
-                    }
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-        }
-    }
-}
-
-//@Preview(showBackground = true)
-//@Composable
-//fun storePreview() {
-//    OrderWithTheme() {
-//        var orderMenuList = mutableListOf<OrderMenuItem>()
-//        var allOrder = mutableListOf<Order>()
-//        for (i in 1..15) {
-//            allOrder.add(Order(i, "order$i", 1111111))
-//            orderMenuList.add(OrderMenuItem(1, 1, "menu$i", i))
-//        }
-//        val isClicked = remember { mutableStateOf(false) }
-//        OrderWithTheme() {
-//            Surface(
-//                modifier = Modifier.fillMaxSize(),
-//                color = MaterialTheme.colors.background
-//            ) {
-//                TestInitView(allOrder,orderMenuList)
-//
-//            }
-//        }
-//    }
-//}
