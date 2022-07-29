@@ -165,7 +165,6 @@ class StoreActivity : ComponentActivity() {
                     }
                 }
             }
-
         }
     }
 
@@ -245,6 +244,7 @@ fun OrderList(dbUtil: DBUtil) {
 
         for (order in allOrder) {
             OrderCard(orderName = order.name, orderMenuList = orderMenuList[order.id])
+            Spacer(modifier = Modifier.size(15.dp))
         }
     }
 }
