@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.euphonyio.orderwith">
     <!-- add Permission RECORD_AUDIO for using Euphony -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" /> <!-- add Permission READ_STORAGE for loading image -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
