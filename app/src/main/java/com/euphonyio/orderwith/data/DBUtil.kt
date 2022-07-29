@@ -29,11 +29,23 @@ class DBUtil(context: Context) {
 
 
     // 2. add Menu
-    suspend fun addMenu(name: String, description: String, cost: Int) {
+    suspend fun addMenu(name: String, description: String, cost: Int):Int? {
         val dao = db.menuDao()
-        val id = (dao.getLastId() ?: 0) + 1
-        val menu = Menu(id, name, description, cost)
-        dao.insertMenu(menu)
+        var lastId : Int? = 0
+
+        if(dao.getAll().isEmpty()) {
+            lastId = 0
+        } else {
+            lastId = dao.getLastId()
+        }
+
+        if (lastId != null) {
+            val menu = Menu(lastId + 1, name, description,cost)
+            dao.insertAll(menu)
+            return lastId + 1
+        } else {
+            return null
+        }
     }
 
     // 3-1. delete Menu
@@ -72,7 +84,14 @@ class DBUtil(context: Context) {
     // 2. add Order
     suspend fun addOrder(name: String): Int? {
         val dao = db.orderDao()
-        val lastId = dao.getLastId()
+        var lastId : Int? = 0
+
+        if(dao.getAll().isEmpty()) {
+            lastId = 0
+        } else {
+            lastId = dao.getLastId()
+        }
+
         if (lastId != null) {
             val order = Order(lastId + 1, name, Date().time)
             dao.insertAll(order)
@@ -123,7 +142,14 @@ class DBUtil(context: Context) {
     //2. add OrderMenu
     suspend fun addOrderMenu(orderId: Int, menuId: Int, count: Int): Int? {
         val dao = db.orderMenuDao()
-        val lastId = dao.getLastId()
+        var lastId : Int? = 0
+
+        if(dao.getAll().isEmpty()) {
+            lastId = 0
+        } else {
+            lastId = dao.getLastId()
+        }
+
         if (lastId != null) {
             val orderMenu = OrderMenu(lastId + 1, orderId, menuId, count)
             dao.insertAll(orderMenu)
