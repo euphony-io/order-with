@@ -260,14 +260,14 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(5.dp)) {
 
             // TODO: dummy Data 삭제
-            itemsIndexed(items = OrderItem.getMockMenuItem()) { index, item ->
-                MenuItemView(index = index, orderItem = item)
-            }
-
-            // TODO: 실제 사용코드
-//            itemsIndexed(items = menuListResponse) { index, item ->
+//            itemsIndexed(items = OrderItem.getMockMenuItem()) { index, item ->
 //                MenuItemView(index = index, orderItem = item)
 //            }
+
+            // TODO: 실제 사용코드
+            itemsIndexed(items = menuListResponse) { index, item ->
+                MenuItemView(index = index, orderItem = item)
+            }
         }
     }
 
@@ -465,11 +465,15 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
                         // send the order button
                         Button(
                             onClick = {
-                                transmitOrder()
-                                Toast.makeText(applicationContext,
-                                    "Order Success",
-                                    Toast.LENGTH_LONG).show()
+                                launch(coroutineContext) {
+                                    transmitOrder()
+                                    Toast.makeText(applicationContext,
+                                        "Order Success",
+                                        Toast.LENGTH_LONG).show()
+                                }
+                                onDismiss
                             },
+
                             modifier = Modifier.padding(8.dp),
                             shape = RoundedCornerShape(5.dp),
                             colors = ButtonDefaults.buttonColors(backgroundColor = Orange)
