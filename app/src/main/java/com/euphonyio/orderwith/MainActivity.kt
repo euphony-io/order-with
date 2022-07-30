@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
         if (requestCode == 0) {
             val denied = permissions.count { checkSelfPermission(it) == PackageManager.PERMISSION_DENIED }
             if (denied > 0) {
-                Toast.makeText(applicationContext, "You should get permissions to use euphony-hub", Toast.LENGTH_LONG).show()
+                Toast.makeText(applicationContext, "You should get permissions to use orderWith", Toast.LENGTH_LONG).show()
                 finish()
             }
         }

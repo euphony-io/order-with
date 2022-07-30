@@ -68,27 +68,20 @@ class StoreActivity : ComponentActivity() {
         }
 
         setContent {
-            OrderWithTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    InitView(dbUtil)
-                }
-            }
+            InitView(dbUtil)
         }
         if (!allMenu.isNullOrEmpty()) {
             mRxManager.listen()
 
-            var orderContent = ""
-            mRxManager.acousticSensor = AcousticSensor { letters ->
-                if (letters == MENU_REQUEST) {
-                    flag.value = MENU_REQUEST
-                } else {
-                    flag.value = letters.substring(0..1)
-                    orderContent = letters.substring(2)
-                }
+        var orderContent = ""
+        mRxManager.acousticSensor = AcousticSensor { letters ->
+            if (letters == MENU_REQUEST) {
+                flag.value = MENU_REQUEST
+            } else {
+                flag.value = letters.substring(0..1)
+                orderContent = letters.substring(2)
             }
+        }
 
             flag.observe(this) { flag ->
                 var speakOn = false
@@ -357,7 +350,10 @@ fun AddMenuDialog(
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties()
 ) {
-    var text by remember { mutableStateOf("") }
+    var nameText by remember { mutableStateOf("") }
+    var descriptionText by remember { mutableStateOf("") }
+    var costText by remember { mutableStateOf("") }
+
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = properties
@@ -370,8 +366,8 @@ fun AddMenuDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 TextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = nameText,
+                    onValueChange = { nameText = it },
                     label = { Text("Name") },
                     modifier = Modifier
                         .padding(all = 10.dp),
@@ -380,8 +376,8 @@ fun AddMenuDialog(
                     )
                 )
                 TextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = descriptionText,
+                    onValueChange = { descriptionText = it },
                     label = { Text("Description") },
                     modifier = Modifier
                         .padding(all = 10.dp),
@@ -391,18 +387,8 @@ fun AddMenuDialog(
 
                 )
                 TextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text("Image") },
-                    modifier = Modifier
-                        .padding(all = 10.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White
-                    )
-                )
-                TextField(
-                    value = text,
-                    onValueChange = { text = it },
+                    value = costText,
+                    onValueChange = { costText = it },
                     label = { Text("cost") },
                     modifier = Modifier
                         .padding(all = 10.dp),
@@ -415,7 +401,7 @@ fun AddMenuDialog(
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = {},
+                        onClick = onDismissRequest,
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("CANCEL")
@@ -424,7 +410,7 @@ fun AddMenuDialog(
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = {},
+                        onClick = { /*TODO: 디비에 메뉴추가*/ },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("ADD")
