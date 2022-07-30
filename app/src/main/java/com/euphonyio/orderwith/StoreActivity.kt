@@ -73,15 +73,15 @@ class StoreActivity : ComponentActivity() {
         if (!allMenu.isNullOrEmpty()) {
             mRxManager.listen()
 
-        var orderContent = ""
-        mRxManager.acousticSensor = AcousticSensor { letters ->
-            if (letters == MENU_REQUEST) {
-                flag.value = MENU_REQUEST
-            } else {
-                flag.value = letters.substring(0..1)
-                orderContent = letters.substring(2)
+            var orderContent = ""
+            mRxManager.acousticSensor = AcousticSensor { letters ->
+                if (letters == MENU_REQUEST) {
+                    flag.value = MENU_REQUEST
+                } else {
+                    flag.value = letters.substring(0..1)
+                    orderContent = letters.substring(2)
+                }
             }
-        }
 
             flag.observe(this) { flag ->
                 var speakOn = false
@@ -120,8 +120,7 @@ class StoreActivity : ComponentActivity() {
                     }
                 }
             }
-        }
-        else{
+        } else {
             Log.i(TAG, "Store has no menu. Add menu and Try agin")
         }
     }
@@ -353,6 +352,8 @@ fun AddMenuDialog(
     var nameText by remember { mutableStateOf("") }
     var descriptionText by remember { mutableStateOf("") }
     var costText by remember { mutableStateOf("") }
+    val util = DBUtil(LocalContext.current)
+    val coroutineScope = rememberCoroutineScope()
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -410,7 +411,16 @@ fun AddMenuDialog(
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = { /*TODO: 디비에 메뉴추가*/ },
+                        onClick = {
+                            coroutineScope.launch {
+                                util.addMenu(
+                                    name = nameText,
+                                    description = descriptionText,
+                                    cost = costText.toInt()
+                                )
+                                onDismissRequest()
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("ADD")
