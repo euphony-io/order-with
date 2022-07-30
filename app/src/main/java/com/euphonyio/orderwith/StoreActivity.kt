@@ -77,53 +77,59 @@ class StoreActivity : ComponentActivity() {
                 }
             }
         }
+        if (!allMenu.isNullOrEmpty()) {
+            mRxManager.listen()
 
-        var orderContent = ""
-        mRxManager.acousticSensor = AcousticSensor { letters ->
-            if (letters == "MENU_REQUEST") {
-                flag.value = MENU_REQUEST
-            } else {
-                flag.value = letters.substring(0..1)
-                orderContent = letters.substring(2)
-            }
-        }
-
-        flag.observe(this) { flag ->
-            var speakOn = false
-
-            when (flag) {
-                MENU_REQUEST -> {
-                    Log.i(TAG, "Receive Menu Request.")
-                    if (speakOn) {
-                        mTxManager.stop()
-                    }
-                    mRxManager.finish()
-                    sendMenu(allMenu, mTxManager)
-                    speakOn = true
+            var orderContent = ""
+            mRxManager.acousticSensor = AcousticSensor { letters ->
+                if (letters == MENU_REQUEST) {
+                    flag.value = MENU_REQUEST
+                } else {
+                    flag.value = letters.substring(0..1)
+                    orderContent = letters.substring(2)
                 }
-                ORDER_REQUEST -> {
-                    Log.i(TAG, "Receive Order Request.")
-                    if (speakOn) {
-                        mTxManager.stop()
-                    }
-                    if (orderContent.isNullOrEmpty()) {
-                        Log.i(TAG, "Receive Wrong Data.")
-                    } else {
-                        receiveOrder(orderContent, dbUtil)
+            }
 
-                        setContent {
-                            Column {
-                                TopBar()
-                                OrderList(dbUtil = dbUtil)
+            flag.observe(this) { flag ->
+                var speakOn = false
+
+                when (flag) {
+                    MENU_REQUEST -> {
+                        Log.i(TAG, "Receive Menu Request.")
+                        if (speakOn) {
+                            mTxManager.stop()
+                        }
+                        mRxManager.finish()
+                        sendMenu(allMenu, mTxManager)
+                        speakOn = true
+                    }
+                    ORDER_REQUEST -> {
+                        Log.i(TAG, "Receive Order Request.")
+                        if (speakOn) {
+                            mTxManager.stop()
+                        }
+                        if (orderContent.isNullOrEmpty()) {
+                            Log.i(TAG, "Receive Wrong Data.")
+                        } else {
+                            receiveOrder(orderContent, dbUtil)
+
+                            setContent {
+                                Column {
+                                    TopBar()
+                                    OrderList(dbUtil = dbUtil)
+                                }
                             }
                         }
                     }
-                }
-                else -> {
-                    Log.i(TAG, "Receive Wrong Data.")
-                    //nothing received
+                    else -> {
+                        Log.i(TAG, "Receive Wrong Data.")
+                        //nothing received
+                    }
                 }
             }
+        }
+        else{
+            Log.i(TAG, "Store has no menu. Add menu and Try agin")
         }
     }
 
