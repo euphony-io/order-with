@@ -206,6 +206,7 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
 
     @Composable
     fun CustomerView() {
+
         val onBackPressedDispatcher =
             LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
