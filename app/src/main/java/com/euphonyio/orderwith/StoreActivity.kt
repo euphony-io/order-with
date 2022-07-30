@@ -70,53 +70,58 @@ class StoreActivity : ComponentActivity() {
         setContent {
             InitView(dbUtil)
         }
+        if (!allMenu.isNullOrEmpty()) {
+            mRxManager.listen()
 
-        var orderContent = ""
-        mRxManager.acousticSensor = AcousticSensor { letters ->
-            if (letters == MENU_REQUEST) {
-                flag.value = MENU_REQUEST
-            } else {
-                flag.value = letters.substring(0..1)
-                orderContent = letters.substring(2)
-            }
-        }
-
-        flag.observe(this) { flag ->
-            var speakOn = false
-
-            when (flag) {
-                MENU_REQUEST -> {
-                    Log.i(TAG, "Receive Menu Request.")
-                    if (speakOn) {
-                        mTxManager.stop()
-                    }
-                    mRxManager.finish()
-                    sendMenu(allMenu, mTxManager)
-                    speakOn = true
+            var orderContent = ""
+            mRxManager.acousticSensor = AcousticSensor { letters ->
+                if (letters == MENU_REQUEST) {
+                    flag.value = MENU_REQUEST
+                } else {
+                    flag.value = letters.substring(0..1)
+                    orderContent = letters.substring(2)
                 }
-                ORDER_REQUEST -> {
-                    Log.i(TAG, "Receive Order Request.")
-                    if (speakOn) {
-                        mTxManager.stop()
-                    }
-                    if (orderContent.isNullOrEmpty()) {
-                        Log.i(TAG, "Receive Wrong Data.")
-                    } else {
-                        receiveOrder(orderContent, dbUtil)
+            }
 
-                        setContent {
-                            Column {
-                                TopBar()
-                                OrderList(dbUtil = dbUtil)
+            flag.observe(this) { flag ->
+                var speakOn = false
+
+                when (flag) {
+                    MENU_REQUEST -> {
+                        Log.i(TAG, "Receive Menu Request.")
+                        if (speakOn) {
+                            mTxManager.stop()
+                        }
+                        mRxManager.finish()
+                        sendMenu(allMenu, mTxManager)
+                        speakOn = true
+                    }
+                    ORDER_REQUEST -> {
+                        Log.i(TAG, "Receive Order Request.")
+                        if (speakOn) {
+                            mTxManager.stop()
+                        }
+                        if (orderContent.isNullOrEmpty()) {
+                            Log.i(TAG, "Receive Wrong Data.")
+                        } else {
+                            receiveOrder(orderContent, dbUtil)
+
+                            setContent {
+                                Column {
+                                    TopBar()
+                                    OrderList(dbUtil = dbUtil)
+                                }
                             }
                         }
                     }
-                }
-                else -> {
-                    Log.i(TAG, "Receive Wrong Data.")
-                    //nothing received
+                    else -> {
+                        Log.i(TAG, "Receive Wrong Data.")
+                        //nothing received
+                    }
                 }
             }
+        } else {
+            Log.i(TAG, "Store has no menu. Add menu and Try agin")
         }
     }
 
@@ -192,9 +197,6 @@ fun InitView(dbUtil: DBUtil) {
             .fillMaxWidth()
             .fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // TODO: RxManager가 리슨하고 있지 않아요. 디비 데이터가 있을 때 없을 때에 따라 나눠져있다면 알려주세요!
-        // TODO: 현재 메뉴추가 버튼에 함수 구현이 되어있지 않아서 메뉴 추가할 수가 없습니다 ㅠ.ㅠ
-
         TopBar()
         OrderList(dbUtil)
     }
@@ -350,6 +352,8 @@ fun AddMenuDialog(
     var nameText by remember { mutableStateOf("") }
     var descriptionText by remember { mutableStateOf("") }
     var costText by remember { mutableStateOf("") }
+    val util = DBUtil(LocalContext.current)
+    val coroutineScope = rememberCoroutineScope()
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -407,7 +411,16 @@ fun AddMenuDialog(
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = { /*TODO: 디비에 메뉴추가*/ },
+                        onClick = {
+                            coroutineScope.launch {
+                                util.addMenu(
+                                    name = nameText,
+                                    description = descriptionText,
+                                    cost = costText.toInt()
+                                )
+                                onDismissRequest()
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("ADD")
