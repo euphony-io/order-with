@@ -69,7 +69,7 @@ class StoreActivity : ComponentActivity() {
         runBlocking {
             allMenu = dbUtil.getAllMenu()
         }
-        Log.e(TAG, "finish menu check")
+        Log.e(TAG, "Finish menu check")
 
         setContent {
             InitView(dbUtil)
@@ -77,11 +77,11 @@ class StoreActivity : ComponentActivity() {
 
         if (!allMenu.isNullOrEmpty()) {
             mRxManager.listen()
-            Log.e(TAG, "listen start")
+            Log.i(TAG, "Listen start")
 
             var orderContent = ""
             mRxManager.acousticSensor = AcousticSensor { letters ->
-                Log.e(TAG, "listen success: " + letters)
+                Log.i(TAG, "Listen success: " + letters)
 
                 if (letters == MENU_REQUEST) {
                     flag.value = MENU_REQUEST
@@ -175,18 +175,18 @@ class StoreActivity : ComponentActivity() {
         }
     }
 
-    private fun sendMenu(allMenu: List<Menu>, mTxManager: EuTxManager) {
-        var menuData = ""
-        for (menu in allMenu) {
-            val menuElement =
-                menu.id.toString() + "_" + menu.name + "_" + menu.description + "_" + menu.cost.toString() + "&"
-            menuData += menuElement
-        }
-
-        mTxManager.code = menuData
-        mTxManager.play(-1)
-        Log.e("Tttt", "send start")
-    }
+//    private fun sendMenu(allMenu: List<Menu>, mTxManager: EuTxManager) {
+//        var menuData = ""
+//        for (menu in allMenu) {
+//            val menuElement =
+//                menu.id.toString() + "_" + menu.name + "_" + menu.description + "_" + menu.cost.toString() + "&"
+//            menuData += menuElement
+//        }
+//
+//        mTxManager.code = menuData
+//        mTxManager.play(-1)
+//        Log.e("Tttt", "send start")
+//    }
 
     fun showErrorToast(logMsg: String) {
         Log.i(TAG, logMsg)
@@ -215,7 +215,8 @@ fun InitView(dbUtil: DBUtil) {
 @Composable
 fun TopBar() {
     val context = LocalContext.current
-    val isClicked = remember { mutableStateOf(false) }
+    val openDialog = remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -232,13 +233,13 @@ fun TopBar() {
         Text(text = stringResource(id = R.string.title_orderlist), fontSize = 30.sp)
         IconButton(
             modifier = Modifier.size(50.dp),
-            onClick = { isClicked.value = !isClicked.value }) {
+            onClick = { openDialog.value = !openDialog.value }) {
             Icon(
                 Icons.Outlined.AddCircle,
                 "go to add"
             )
-            if (isClicked.value) {
-                AddMenuDialog(onDismissRequest = {})
+            if (openDialog.value) {
+                AddMenuDialog(onDismissRequest = {openDialog.value=false})
             }
 
         }
@@ -426,7 +427,9 @@ fun AddMenuDialog(
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = onDismissRequest,
+                        onClick = {onDismissRequest
+                                  Log.i("[StoreActivity]", "Cancel Add menu")
+                                  },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("CANCEL")
@@ -437,12 +440,13 @@ fun AddMenuDialog(
                             .size(100.dp, 50.dp),
                         onClick = {
                             coroutineScope.launch {
-                                util.addMenu(
+                                val menuId = util.addMenu(
                                     name = nameText,
                                     description = descriptionText,
                                     cost = costText.toInt()
                                 )
-                                Log.e("[StoreActivity]", "Add menu")
+                                Log.i("[StoreActivity]", "Menu:: Id: " +menuId.toString()+", name: "+nameText+", cost: "+costText+", description: "+descriptionText)
+                                Log.i("[StoreActivity]", "Finish Add menu")
                                 onDismissRequest()
                             }
                         },
