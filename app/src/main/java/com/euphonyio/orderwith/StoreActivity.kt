@@ -39,6 +39,7 @@ import com.euphonyio.orderwith.data.DBUtil
 import com.euphonyio.orderwith.data.dto.Menu
 import com.euphonyio.orderwith.data.dto.Order
 import com.euphonyio.orderwith.data.dto.OrderMenuItem
+import com.euphonyio.orderwith.ui.theme.Orange
 import com.euphonyio.orderwith.ui.theme.OrderWithTheme
 import kotlinx.coroutines.*
 import java.sql.Types.NULL
@@ -53,6 +54,7 @@ class StoreActivity : ComponentActivity() {
     private lateinit var dbUtil: DBUtil
     private lateinit var mTxManager: EuTxManager
     private lateinit var mRxManager: EuRxManager
+    private lateinit var mRxManager_2: EuRxManager
     private var flag = MutableLiveData("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,20 +63,26 @@ class StoreActivity : ComponentActivity() {
         dbUtil = DBUtil(this)
         mTxManager = EuTxManager(this)
         mRxManager = EuRxManager()
+        mRxManager_2 = EuRxManager()
 
         var allMenu: List<Menu>
         runBlocking {
             allMenu = dbUtil.getAllMenu()
         }
+        Log.e(TAG, "Finish menu check")
 
         setContent {
             InitView(dbUtil)
         }
+
         if (!allMenu.isNullOrEmpty()) {
             mRxManager.listen()
+            Log.i(TAG, "Listen start")
 
             var orderContent = ""
             mRxManager.acousticSensor = AcousticSensor { letters ->
+                Log.i(TAG, "Listen success: " + letters)
+
                 if (letters == MENU_REQUEST) {
                     flag.value = MENU_REQUEST
                 } else {
@@ -89,30 +97,31 @@ class StoreActivity : ComponentActivity() {
                 when (flag) {
                     MENU_REQUEST -> {
                         Log.i(TAG, "Receive Menu Request.")
+
                         if (speakOn) {
                             mTxManager.stop()
                         }
                         mRxManager.finish()
-                        sendMenu(allMenu, mTxManager)
-                        speakOn = true
+                        Toast.makeText(
+                            this@StoreActivity,
+                            "Menu requested",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        /* TODO: send menu content
+                        speakOn = true */
                     }
                     ORDER_REQUEST -> {
                         Log.i(TAG, "Receive Order Request.")
-                        if (speakOn) {
-                            mTxManager.stop()
-                        }
-                        if (orderContent.isNullOrEmpty()) {
-                            Log.i(TAG, "Receive Wrong Data.")
-                        } else {
-                            receiveOrder(orderContent, dbUtil)
 
-                            setContent {
-                                Column {
-                                    TopBar()
-                                    OrderList(dbUtil = dbUtil)
-                                }
-                            }
-                        }
+                        mRxManager.finish()
+                        Toast.makeText(
+                            this@StoreActivity,
+                            "Order requested",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        //TODO: save order data
+                        // receiveOrder(orderContent, dbUtil)
+
                     }
                     else -> {
                         Log.i(TAG, "Receive Wrong Data.")
@@ -121,33 +130,24 @@ class StoreActivity : ComponentActivity() {
                 }
             }
         } else {
-            Log.i(TAG, "Store has no menu. Add menu and Try agin")
+            showErrorToast("Store has no menu. Add menu and Try again")
         }
     }
 
-
     private fun receiveOrder(letters: String, dbUtil: DBUtil) {
-        fun showErrorToast(logMsg: String) {
-            Log.i(TAG, logMsg)
-            Toast.makeText(
-                this@StoreActivity,
-                this@StoreActivity.resources.getString(R.string.common_error_message),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
 
-        val newOrder = (letters.split("&"))
+        val orders = (letters.split("&"))
         CoroutineScope(Dispatchers.IO).launch {
-            for (menus in newOrder) {
-                val saveOrder = menus.split("_")
-                if (saveOrder.size != 3) {
-                    showErrorToast("Order size is ${saveOrder.size}")
+            for (order in orders) {
+                val splitOrder = order.split("_")
+                if (splitOrder.size != 3) {
+                    showErrorToast("Order size is ${splitOrder.size}")
                     continue
                 }
 
-                val orderName = saveOrder[1]
-                val menuId = saveOrder[0]
-                val count = saveOrder[2]
+                val orderName = splitOrder[1]
+                val menuId = splitOrder[0]
+                val count = splitOrder[2]
                 val orderId = dbUtil.addOrder(orderName)
 
                 if (orderId == null) {
@@ -175,20 +175,30 @@ class StoreActivity : ComponentActivity() {
         }
     }
 
+//    private fun sendMenu(allMenu: List<Menu>, mTxManager: EuTxManager) {
+//        var menuData = ""
+//        for (menu in allMenu) {
+//            val menuElement =
+//                menu.id.toString() + "_" + menu.name + "_" + menu.description + "_" + menu.cost.toString() + "&"
+//            menuData += menuElement
+//        }
+//
+//        mTxManager.code = menuData
+//        mTxManager.play(-1)
+//        Log.e("Tttt", "send start")
+//    }
 
-    private fun sendMenu(allMenu: List<Menu>, mTxManager: EuTxManager) {
-        var menuData = ""
-        for (menu in allMenu) {
-            val menuElement =
-                menu.id.toString() + "_" + menu.name + "_" + menu.description + "_" + menu.cost.toString() + "&"
-            menuData += menuElement
-        }
-
-        mTxManager.code = menuData
-        mTxManager.play(-1)
+    fun showErrorToast(logMsg: String) {
+        Log.i(TAG, logMsg)
+        Toast.makeText(
+            this@StoreActivity,
+            this@StoreActivity.resources.getString(R.string.common_error_message),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
 }
+
 
 @Composable
 fun InitView(dbUtil: DBUtil) {
@@ -205,7 +215,8 @@ fun InitView(dbUtil: DBUtil) {
 @Composable
 fun TopBar() {
     val context = LocalContext.current
-    val isClicked = remember { mutableStateOf(false) }
+    val openDialog = remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -222,13 +233,13 @@ fun TopBar() {
         Text(text = stringResource(id = R.string.title_orderlist), fontSize = 30.sp)
         IconButton(
             modifier = Modifier.size(50.dp),
-            onClick = { isClicked.value = !isClicked.value }) {
+            onClick = { openDialog.value = !openDialog.value }) {
             Icon(
                 Icons.Outlined.AddCircle,
                 "go to add"
             )
-            if (isClicked.value) {
-                AddMenuDialog(onDismissRequest = {})
+            if (openDialog.value) {
+                AddMenuDialog(onDismissRequest = {openDialog.value=false})
             }
 
         }
@@ -253,8 +264,17 @@ fun OrderList(dbUtil: DBUtil) {
             for (order in allOrder) {
                 orderMenuList[order.id] = dbUtil.getAllWithMenuByOrderId(order.id)
             }
-        }
 
+//        CoroutineScope(Dispatchers.Main).launch{
+//
+//            CoroutineScope(Dispatchers.Default).async{
+//                val allOrder = dbUtil.getAllOrder()
+//                for (order in allOrder){
+//                    orderMenuList[order.id] = dbUtil.getAllWithMenuByOrderId(order.id)
+//                }
+//            }.await()
+//
+        }
         for (order in allOrder) {
             OrderCard(orderName = order.name, orderMenuList = orderMenuList[order.id])
             Spacer(modifier = Modifier.size(15.dp))
@@ -334,7 +354,12 @@ fun ShowDialog(
             {
                 TextButton(onClick = {
                     isClicked.value = false
-                }) { Text(text = stringResource(id = R.string.common_close)) }
+                }) {
+                    Text(
+                        text = stringResource(id = R.string.common_close),
+                        color = Orange
+                    )
+                }
             }
         }
     )
@@ -402,7 +427,9 @@ fun AddMenuDialog(
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = onDismissRequest,
+                        onClick = {onDismissRequest
+                                  Log.i("[StoreActivity]", "Cancel Add menu")
+                                  },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("CANCEL")
@@ -413,15 +440,17 @@ fun AddMenuDialog(
                             .size(100.dp, 50.dp),
                         onClick = {
                             coroutineScope.launch {
-                                util.addMenu(
+                                val menuId = util.addMenu(
                                     name = nameText,
                                     description = descriptionText,
                                     cost = costText.toInt()
                                 )
+                                Log.i("[StoreActivity]", "Menu:: Id: " +menuId.toString()+", name: "+nameText+", cost: "+costText+", description: "+descriptionText)
+                                Log.i("[StoreActivity]", "Finish Add menu")
                                 onDismissRequest()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Orange)
                     ) {
                         Text("ADD")
                     }
