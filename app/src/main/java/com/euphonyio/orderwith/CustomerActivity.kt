@@ -32,6 +32,7 @@ import androidx.lifecycle.Observer
 import co.euphony.rx.AcousticSensor
 import co.euphony.rx.EuRxManager
 import co.euphony.tx.EuTxManager
+import co.euphony.util.EuOption
 import com.euphonyio.orderwith.model.OrderItem
 import com.euphonyio.orderwith.ui.theme.Orange
 import com.euphonyio.orderwith.ui.theme.Typography
@@ -67,6 +68,10 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
         EuTxManager(applicationContext)
     }
 
+    private val mEuPITxManager: EuTxManager by lazy {
+        EuTxManager(applicationContext)
+    }
+
     private val rxManager: EuRxManager by lazy {
         EuRxManager()
     }
@@ -98,11 +103,17 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
 
     private fun requestMenu() {
         if (isSpeaking.value == false) {
-            _listenResult.postValue("")
+//            _listenResult.postValue("")
             _isSpeaking.postValue(true)
 
-            txManager.setCode(MENU_REQUEST)
-            txManager.play(-1)
+            // setCode를 이용한 방법
+            // 추후 양방향 통신을 위해 EuPI로 대체
+//            txManager.setCode(MENU_REQUEST)
+//            txManager.play(-1)
+
+            // EuPI를 이용한 방법
+            mEuPITxManager.setMode(EuOption.ModeType.EUPI)
+            mEuPITxManager.callEuPI(RequestCodeEnum.MENU_REQUEST.code, EuTxManager.EuPIDuration.LENGTH_FOREVER)
         } else {
             _isSpeaking.postValue(false)
             txManager.stop()
@@ -146,8 +157,8 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
         }
     }
 
-    // 데이터 파싱해서 리스트로 저장
-    // create menu item list
+    /** 데이터 파싱해서 리스트로 저장
+     *  create menu item list */
     private fun parseMenuItem(receivedData: String): ArrayList<OrderItem> {
         val orderItemList = arrayListOf<OrderItem>()
 
@@ -201,6 +212,7 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
     private fun stopEuphony() {
         txManager.stop()
         rxManager.finish()
+        mEuPITxManager.stop()
     }
 
 
@@ -215,7 +227,8 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
 
         requestMenu()
 
-        listen()
+        // 단방향통신을 위해 listen() 메소드 비활성화(임시)
+//        listen()
 
         Scaffold(
             modifier = Modifier.padding(10.dp),
@@ -261,14 +274,14 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(5.dp)) {
 
             // TODO: dummy Data 삭제
-            itemsIndexed(items = OrderItem.getMockMenuItem()) { index, item ->
-                MenuItemView(index = index, orderItem = item)
-            }
-
-            // TODO: 실제 사용코드
-//            itemsIndexed(items = menuListResponse) { index, item ->
+//            itemsIndexed(items = OrderItem.getMockMenuItem()) { index, item ->
 //                MenuItemView(index = index, orderItem = item)
 //            }
+
+            // TODO: 실제 사용코드
+            itemsIndexed(items = menuListResponse) { index, item ->
+                MenuItemView(index = index, orderItem = item)
+            }
         }
     }
 
@@ -466,11 +479,15 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
                         // send the order button
                         Button(
                             onClick = {
-                                transmitOrder()
-                                Toast.makeText(applicationContext,
-                                    "Order Success",
-                                    Toast.LENGTH_LONG).show()
+                                launch(coroutineContext) {
+                                    transmitOrder()
+                                    Toast.makeText(applicationContext,
+                                        "Order Success",
+                                        Toast.LENGTH_LONG).show()
+                                }
+                                onDismiss
                             },
+
                             modifier = Modifier.padding(8.dp),
                             shape = RoundedCornerShape(5.dp),
                             colors = ButtonDefaults.buttonColors(backgroundColor = Orange)
