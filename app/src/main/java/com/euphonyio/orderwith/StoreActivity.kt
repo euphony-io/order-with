@@ -49,7 +49,7 @@ import java.sql.Types.NULL
 class StoreActivity : ComponentActivity() {
     companion object {
         // 메뉴는 EuPI로 대체하기 때문에 비활성화
-//        private const val MENU_REQUEST = "requestMenu"
+        private const val MENU_REQUEST = "requestMenu"
         private const val ORDER_REQUEST = "#&"
     }
 
@@ -80,69 +80,78 @@ class StoreActivity : ComponentActivity() {
             InitView(dbUtil)
         }
 
-        // setCode()방식.
-        // EuPI 방식으로 대체
-//        if (!allMenu.isNullOrEmpty()) {
-//            mRxManager.listen()
-//
-//            var orderContent = ""
-//            mRxManager.acousticSensor = AcousticSensor { letters ->
-//                if (letters == MENU_REQUEST) {
-//                    flag.value = MENU_REQUEST
-//                } else {
-//                    flag.value = letters.substring(0..1)
-//                    orderContent = letters.substring(2)
-//                }
-//            }
-//
-//            flag.observe(this) { flag ->
-//                var speakOn = false
-//
-//                when (flag) {
+        if (!allMenu.isNullOrEmpty()) {
+            mRxManager.listen()
+
+            var orderContent = ""
+            mRxManager.acousticSensor = AcousticSensor { letters ->
+                if (letters == MENU_REQUEST) {
+                    flag.value = MENU_REQUEST
+                } else {
+                    flag.value = letters.substring(0..1)
+                    orderContent = letters.substring(2)
+                }
+            }
+
+            flag.observe(this) { flag ->
+                var speakOn = false
+
+                when (flag) {
+                    // setCode()방식.
+                    // EuPI 방식으로 대체
 //                    MENU_REQUEST -> {
 //                        Log.i(TAG, "Receive Menu Request.")
 //                        if (speakOn) {
 //                            mTxManager.stop()
 //                        }
 //                        mRxManager.finish()
-//                        sendMenu(allMenu, mTxManager)
-//                        speakOn = true
+//                        Toast.makeText(
+//                            this@StoreActivity,
+//                            "Menu requested",
+//                            Toast.LENGTH_SHORT
+//                        ).show()
+//                        /* TODO: send menu content
+//                        speakOn = true */
 //                    }
-//                    ORDER_REQUEST -> {
-//                        Log.i(TAG, "Receive Order Request.")
-//                        if (speakOn) {
-//                            mTxManager.stop()
-//                        }
-//                        if (orderContent.isNullOrEmpty()) {
-//                            Log.i(TAG, "Receive Wrong Data.")
-//                        } else {
-//                            receiveOrder(orderContent, dbUtil)
-//
-//                            setContent {
-//                                Column {
-//                                    TopBar()
-//                                    OrderList(dbUtil = dbUtil)
-//                                }
-//                            }
-//                        }
-//                    }
-//                    else -> {
-//                        Log.i(TAG, "Receive Wrong Data.")
-//                        //nothing received
-//                    }
-//                }
-//            }
-//        } else {
-//            Log.i(TAG, "Store has no menu. Add menu and Try agin")
-//        }
+                    ORDER_REQUEST -> {
+                        Log.i(TAG, "Receive Order Request.")
+
+                        mRxManager.finish()
+                        Toast.makeText(
+                            this@StoreActivity,
+                            "Order requested",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        //TODO: save order data
+                        // receiveOrder(orderContent, dbUtil)
+
+                    }
+                    else -> {
+                        Log.i(TAG, "Receive Wrong Data.")
+                        //nothing received
+                    }
+                }
+            }
+        } else {
+            showErrorToast("Store has no menu. Add menu and Try again")
+        }
 
         // EuPI 방식. RequestCodeEnum.MENU_REQUEST 주파수를 들었을때 작업 수행
-        mEuPIRxManager.setOnWaveKeyPressed(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
-            Toast.makeText(this, "menu request detected", Toast.LENGTH_SHORT).show()
-        }
-        mEuPIRxManager.setOnWaveKeyUp(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
-            Toast.makeText(this, "menu request detected", Toast.LENGTH_SHORT).show()
-        }
+//        /**
+//         * 해당 주파수의 음파가 인식될 때 계속 호출되는 API
+//         * */
+//        mEuPIRxManager.setOnWaveKeyPressed(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
+//            Toast.makeText(this, "menu request detected", Toast.LENGTH_SHORT).show()
+//        }
+//        /**
+//         * 해당 주파수의 음파가 발생하고 꺼졌을 때 최초 1회 인식하는 API
+//         * */
+//        mEuPIRxManager.setOnWaveKeyUp(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
+//            Toast.makeText(this, "menu request detected", Toast.LENGTH_SHORT).show()
+//        }
+        /**
+         * 해당 주파수의 음파가 발생했을 때 최초 1회 인식하는 API
+         * */
         mEuPIRxManager.setOnWaveKeyDown(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
             Toast.makeText(this, "menu request detected", Toast.LENGTH_SHORT).show()
         }
