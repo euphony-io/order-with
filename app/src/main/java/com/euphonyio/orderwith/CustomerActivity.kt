@@ -102,24 +102,10 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
     }
 
     private fun requestMenu() {
-        if (isSpeaking.value == false) {
-//            _listenResult.postValue("")
-            _isSpeaking.postValue(true)
-
-            // setCode를 이용한 방법
-            // 추후 양방향 통신을 위해 EuPI로 대체
-//            txManager.setCode(MENU_REQUEST)
-//            txManager.play(-1)
-
             // EuPI를 이용한 방법
             mEuPITxManager.setMode(EuOption.ModeType.EUPI)
             mEuPITxManager.callEuPI(RequestCodeEnum.MENU_REQUEST.code, EuTxManager.EuPIDuration.LENGTH_LONG)
             Log.e(TAG, "menu requested")
-        } else {
-            _isSpeaking.postValue(false)
-            mEuPITxManager.stop()
-            Log.e(TAG, "txManger.stop after requestMenu")
-        }
     }
 
     private fun listen() {
@@ -188,18 +174,11 @@ class CustomerActivity : ComponentActivity(), CoroutineScope {
     }
 
     private fun transmitOrder() {
-        if (isSpeaking.value == false) {
-            isSpeaking.postValue(true)
-
             val order = makeDataToString()
             Log.e(TAG, "I will send the data :: $order")
             txManager.setCode(order)
-            txManager.play(-1)
-        } else {
-            isSpeaking.postValue(false)
-            txManager.stop()
-            Log.e(TAG, "txManager.stop after transmitOrder")
-        }
+            txManager.play(3)
+            Log.e(TAG, "Order Success")
     }
 
     private fun makeDataToString(): String {
