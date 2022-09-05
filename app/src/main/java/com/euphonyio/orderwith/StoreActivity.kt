@@ -67,11 +67,11 @@ class StoreActivity : ComponentActivity() {
         EuPIRxManager = EuRxManager(EuOption.ModeType.EUPI)
         EuPIRxManager.setOnWaveKeyDown(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
             Toast.makeText(this, "Menu request detected", Toast.LENGTH_SHORT).show()
-            Log.d(TAG, "mEuPIRxManagerMenu - Receive menu request.")
+            Log.d(TAG, "EuPIRxManager - Receive menu request.")
         }
         EuPIRxManager.setOnWaveKeyDown(RequestCodeEnum.ORDER_REQUEST.code.toInt()) {
             Toast.makeText(this, "Order request detected", Toast.LENGTH_SHORT).show()
-            Log.d(TAG, "mEuPIRxManagerOrder - Receive order request.")
+            Log.d(TAG, "EuPIRxManager - Receive order request.")
         }
 
         var allMenu: List<Menu>
@@ -85,12 +85,9 @@ class StoreActivity : ComponentActivity() {
         }
 
         if (!allMenu.isNullOrEmpty()) {
-            if (mEuPIRxManagerOrder.listen()) {
-                Log.d(TAG, "mEuPIRxManagerOrder - listen success")
-            }
-            if (mEuPIRxManagerMenu.listen()) {
-                Log.d(TAG, "mEuPIRxManagerMenu - listen success")
-            }
+            if (EuPIRxManager.listen()) {
+                Log.d(TAG, "EuPIRxManager - listen success")
+            }else{Log.d(TAG, "EuPIRxManager - listen fail")
         }else{Log.d(TAG, "Menu is empty")}
     }
 
@@ -106,8 +103,7 @@ class StoreActivity : ComponentActivity() {
 
     private fun stopEuphony() {
         mTxManager.stop()
-        mEuPIRxManagerOrder.finish()
-        mEuPIRxManagerMenu.finish()
+        EuPIRxManager.finish()
     }
 
     private fun receiveOrder(letters: String, dbUtil: DBUtil) {
