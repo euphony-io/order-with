@@ -56,21 +56,20 @@ class StoreActivity : ComponentActivity() {
     private val TAG = "[StoreActivity]"
     private lateinit var dbUtil: DBUtil
     private lateinit var mTxManager: EuTxManager
-    private lateinit var mEuPIRxManagerMenu: EuRxManager
-    private lateinit var mEuPIRxManagerOrder: EuRxManager
+    private lateinit var EuPIRxManager: EuRxManager
+ 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         dbUtil = DBUtil(this)
         mTxManager = EuTxManager(this)
-        mEuPIRxManagerMenu = EuRxManager(EuOption.ModeType.EUPI)
-        mEuPIRxManagerMenu.setOnWaveKeyDown(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
+        EuPIRxManager = EuRxManager(EuOption.ModeType.EUPI)
+        EuPIRxManager.setOnWaveKeyDown(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
             Toast.makeText(this, "Menu request detected", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "mEuPIRxManagerMenu - Receive menu request.")
         }
-        mEuPIRxManagerOrder = EuRxManager(EuOption.ModeType.EUPI)
-        mEuPIRxManagerOrder.setOnWaveKeyDown(RequestCodeEnum.ORDER_REQUEST.code.toInt()) {
+        EuPIRxManager.setOnWaveKeyDown(RequestCodeEnum.ORDER_REQUEST.code.toInt()) {
             Toast.makeText(this, "Order request detected", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "mEuPIRxManagerOrder - Receive order request.")
         }
