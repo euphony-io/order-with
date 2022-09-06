@@ -56,111 +56,39 @@ class StoreActivity : ComponentActivity() {
     private val TAG = "[StoreActivity]"
     private lateinit var dbUtil: DBUtil
     private lateinit var mTxManager: EuTxManager
-    private lateinit var mRxManager: EuRxManager
-    private lateinit var mEuPIRxManager: EuRxManager
-
-    private var flag = MutableLiveData("")
+    private lateinit var EuPIRxManager: EuRxManager
+ 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         dbUtil = DBUtil(this)
         mTxManager = EuTxManager(this)
-        mRxManager = EuRxManager()
-
-        mEuPIRxManager = EuRxManager(EuOption.ModeType.EUPI)
+        EuPIRxManager = EuRxManager(EuOption.ModeType.EUPI)
+        EuPIRxManager.setOnWaveKeyDown(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
+            Toast.makeText(this, "Menu request detected", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "EuPIRxManager - Receive menu request.")
+        }
+        EuPIRxManager.setOnWaveKeyDown(RequestCodeEnum.ORDER_REQUEST.code.toInt()) {
+            Toast.makeText(this, "Order request detected", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "EuPIRxManager - Receive order request.")
+        }
 
         var allMenu: List<Menu>
         runBlocking {
             allMenu = dbUtil.getAllMenu()
         }
-        Log.e(TAG, "Finish menu check")
+        Log.i(TAG, "Finish menu check.")
 
         setContent {
             InitView(dbUtil)
         }
 
         if (!allMenu.isNullOrEmpty()) {
-            mRxManager.listen()
-
-            var orderContent = ""
-            mRxManager.acousticSensor = AcousticSensor { letters ->
-                if (letters == MENU_REQUEST) {
-                    flag.value = MENU_REQUEST
-                } else {
-                    flag.value = letters.substring(0..1)
-                    orderContent = letters.substring(2)
-                }
-            }
-
-            flag.observe(this) { flag ->
-                var speakOn = false
-
-                when (flag) {
-                    // setCode()방식.
-                    // EuPI 방식으로 대체
-//                    MENU_REQUEST -> {
-//                        Log.i(TAG, "Receive Menu Request.")
-//                        if (speakOn) {
-//                            mTxManager.stop()
-//                        }
-//                        mRxManager.finish()
-//                        Toast.makeText(
-//                            this@StoreActivity,
-//                            "Menu requested",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                        /* TODO: send menu content
-//                        speakOn = true */
-//                    }
-                    ORDER_REQUEST -> {
-                        Log.i(TAG, "Receive Order Request.")
-
-                        mRxManager.finish()
-                        Toast.makeText(
-                            this@StoreActivity,
-                            "Order requested",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        //TODO: save order data
-                        // receiveOrder(orderContent, dbUtil)
-
-                    }
-                    else -> {
-                        Log.i(TAG, "Receive Wrong Data.")
-                        //nothing received
-                    }
-                }
-            }
-        } else {
-            showErrorToast("Store has no menu. Add menu and Try again")
-        }
-
-        // EuPI 방식. RequestCodeEnum.MENU_REQUEST 주파수를 들었을때 작업 수행
-//        /**
-//         * 해당 주파수의 음파가 인식될 때 계속 호출되는 API
-//         * */
-//        mEuPIRxManager.setOnWaveKeyPressed(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
-//            Toast.makeText(this, "menu request detected", Toast.LENGTH_SHORT).show()
-//        }
-//        /**
-//         * 해당 주파수의 음파가 발생하고 꺼졌을 때 최초 1회 인식하는 API
-//         * */
-//        mEuPIRxManager.setOnWaveKeyUp(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
-//            Toast.makeText(this, "menu request detected", Toast.LENGTH_SHORT).show()
-//        }
-        /**
-         * 해당 주파수의 음파가 발생했을 때 최초 1회 인식하는 API
-         * */
-        mEuPIRxManager.setOnWaveKeyDown(RequestCodeEnum.MENU_REQUEST.code.toInt()) {
-            Toast.makeText(this, "menu request detected", Toast.LENGTH_SHORT).show()
-        }
-
-        if (mEuPIRxManager.listen()) {
-            Log.d(TAG, "StoreActivity - mEuPIRxManager listen return : true")
-        } else {
-            Log.d(TAG, "StoreActivity - mEuPIRxManager listen return : false")
-        }
+            if (EuPIRxManager.listen()) {
+                Log.d(TAG, "EuPIRxManager - listen success")
+            }else{Log.d(TAG, "EuPIRxManager - listen fail")
+        }else{Log.d(TAG, "Menu is empty")}
     }
 
     override fun onPause() {
@@ -175,8 +103,7 @@ class StoreActivity : ComponentActivity() {
 
     private fun stopEuphony() {
         mTxManager.stop()
-        mRxManager.finish()
-        mEuPIRxManager.finish()
+        EuPIRxManager.finish()
     }
 
     private fun receiveOrder(letters: String, dbUtil: DBUtil) {
@@ -234,7 +161,7 @@ class StoreActivity : ComponentActivity() {
 //    }
 
     fun showErrorToast(logMsg: String) {
-        Log.i(TAG, logMsg)
+        Log.d(TAG, logMsg)
         Toast.makeText(
             this@StoreActivity,
             this@StoreActivity.resources.getString(R.string.common_error_message),
@@ -284,7 +211,7 @@ fun TopBar() {
                 "go to add"
             )
             if (openDialog.value) {
-                AddMenuDialog(onDismissRequest = {openDialog.value=false})
+                AddMenuDialog(onDismissRequest = { openDialog.value = false })
             }
 
         }
@@ -472,9 +399,10 @@ fun AddMenuDialog(
                     Button(
                         modifier = Modifier
                             .size(100.dp, 50.dp),
-                        onClick = {onDismissRequest
-                                  Log.i("[StoreActivity]", "Cancel Add menu")
-                                  },
+                        onClick = {
+                            onDismissRequest
+                            Log.i("[StoreActivity]", "Cancel Add menu")
+                        },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                     ) {
                         Text("CANCEL")
@@ -490,7 +418,10 @@ fun AddMenuDialog(
                                     description = descriptionText,
                                     cost = costText.toInt()
                                 )
-                                Log.i("[StoreActivity]", "Menu:: Id: " +menuId.toString()+", name: "+nameText+", cost: "+costText+", description: "+descriptionText)
+                                Log.i(
+                                    "[StoreActivity]",
+                                    "Menu:: Id: " + menuId.toString() + ", name: " + nameText + ", cost: " + costText + ", description: " + descriptionText
+                                )
                                 Log.i("[StoreActivity]", "Finish Add menu")
                                 onDismissRequest()
                             }
